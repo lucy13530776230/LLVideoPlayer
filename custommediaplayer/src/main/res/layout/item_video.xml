@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/parent_root_rl"
+    android:layout_width="120dp"
+    android:layout_height="80dp">
+
+    <RelativeLayout
+        android:id="@+id/child_root_rl"
+        android:layout_width="110dp"
+        android:layout_height="60dp"
+        android:layout_centerHorizontal="true"
+        android:background="@drawable/video_playing_bg_shape_selector"
+        android:padding="1dp">
+
+        <ImageView
+            android:id="@+id/item_video_iv"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="fitXY" />
+
+        <View
+            android:id="@+id/mongli_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#88000000" />
+
+        <com.lljy.customvideoplayer.view.MarqueeText
+            android:id="@+id/center_name_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:layout_marginLeft="3dp"
+            android:layout_marginRight="3dp"
+            android:ellipsize="marquee"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:gravity="center_vertical"
+            android:marqueeRepeatLimit="marquee_forever"
+            android:scrollHorizontally="true"
+            android:singleLine="true"
+            android:text="啦啦啦啦啦"
+            android:textColor="#ffffff"
+            android:textSize="15sp" />
+
+        <com.lljy.customvideoplayer.view.MarqueeText
+            android:id="@+id/bottom_name_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="10dp"
+            android:layout_marginLeft="3dp"
+            android:layout_marginRight="3dp"
+            android:ellipsize="marquee"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:gravity="center_vertical"
+            android:marqueeRepeatLimit="marquee_forever"
+            android:scrollHorizontally="true"
+            android:singleLine="true"
+            android:text="啦啦啦啦啦"
+            android:textColor="#ffffff"
+            android:textSize="15sp" />
+    </RelativeLayout>
+</RelativeLayout>
