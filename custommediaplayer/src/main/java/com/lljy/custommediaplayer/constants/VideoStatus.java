@@ -21,14 +21,13 @@ public final class VideoStatus {
     public static final int MEDIA_STATE_PLAY_PROGRESS = 19;//播放进度
     public static final int MEDIA_STATE_PLAY_SECOND_PROGRESS = 20;//缓冲进度
     public static final int MEDIA_STATE_PLAY_TOTAL_TIME = 21;//播放总时长
-    public static final int MEDIA_STATE_START_FULL_SCREEN = 22;//开启全屏
-    public static final int MEDIA_STATE_EXIT_FULL_SCREEN = 23;//关闭全屏
 
     public static class Constants {
-        public static final String PLAY_ERROR_MSG = "errorMsg";
-        public static final String PLAY_COVER_URL = "coverUrl";
-        public static final String PLAY_PROGRESS = "playProgress";
-        public static final String PLAY_SECOND_PROGRESS = "secondProgress";
-        public static final String PLAY_TOTAL_TIME = "totoalTime";
+        public static final String IS_PLAY_CACHE = "isPlayCache";//是否是播放的本地视频
+        public static final String PLAY_ERROR_MSG = "errorMsg";//视频错误信息
+        public static final String PLAY_COVER_URL = "coverUrl";//视频封面
+        public static final String PLAY_PROGRESS = "playProgress";//视频进度
+        public static final String PLAY_SECOND_PROGRESS = "secondProgress";//缓冲进度
+        public static final String PLAY_TOTAL_TIME = "totoalTime";//总时间
     }
 }

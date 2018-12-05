@@ -1,4 +1,4 @@
-package com.lljy.custommediaplayer.view;
+package com.lljy.custommediaplayer.view.controller;
 
 import android.content.Context;
 import android.util.AttributeSet;

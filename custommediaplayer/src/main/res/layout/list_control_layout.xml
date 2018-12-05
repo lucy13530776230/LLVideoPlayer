@@ -3,24 +3,15 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <include layout="@layout/video_bottom_progress_layout" />
+    <include layout="@layout/list_video_bottom_progress_layout" />
 
-    <RelativeLayout
-        android:id="@+id/play_or_pause_rl"
+    <ImageView
+        android:id="@+id/cover_iv"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:clickable="true"
-        android:focusable="true"
-        android:focusableInTouchMode="true">
-
-        <ImageView
-            android:id="@+id/cover_iv"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_centerInParent="true"
-            android:scaleType="fitXY"
-            android:visibility="gone" />
-    </RelativeLayout>
+        android:layout_centerInParent="true"
+        android:scaleType="fitXY"
+        android:visibility="gone" />
 
     <include layout="@layout/video_loading_layout" />
 
@@ -32,6 +23,20 @@
         android:src="@drawable/play_start" />
 
     <include layout="@layout/video_error_layout" />
+
+    <RelativeLayout
+        android:id="@+id/video_list_rl"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_alignParentRight="true"
+        android:layout_marginBottom="80dp"
+        android:background="#66000000">
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/video_list_rv"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"></android.support.v7.widget.RecyclerView>
+    </RelativeLayout>
 
     <com.lljy.custommediaplayer.view.controller.ShowControlView
         android:id="@+id/scl"

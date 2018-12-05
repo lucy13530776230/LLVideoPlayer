@@ -49,6 +49,15 @@ dependencies {
     api 'jp.wasabeef:glide-transformations:3.0.1'
     //万用适配器
     api 'com.github.CymChad:BaseRecyclerViewAdapterHelper:2.9.15'
+
+
+    //下载框架
+    // core
+    implementation 'com.liulishuo.okdownload:okdownload:1.0.4-SNAPSHOT'
+    // provide sqlite to store breakpoints
+    implementation 'com.liulishuo.okdownload:sqlite:1.0.4-SNAPSHOT'
+    // provide okhttp to connect to backend
+    implementation 'com.liulishuo.okdownload:okhttp:1.0.4-SNAPSHOT'
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'

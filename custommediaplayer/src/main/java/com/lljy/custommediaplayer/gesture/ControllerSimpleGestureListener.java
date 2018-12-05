@@ -17,6 +17,7 @@ import com.lljy.custommediaplayer.constants.ScrollMode;
 
 
 public class ControllerSimpleGestureListener extends GestureDetector.SimpleOnGestureListener {
+    private static final String TAG = "ControllerSimpleGestureListener";
     private GestureResultListener mGestureResultListener;
     private ScrollMode mScrollMode;
     //横向偏移检测，让快进快退不那么敏感
@@ -47,7 +48,7 @@ public class ControllerSimpleGestureListener extends GestureDetector.SimpleOnGes
         int width = gestureLayout.getWidth();
         switch (mScrollMode) {
             case NONE:
-                Log.d("xgw", "NONE: ");
+                Log.d(TAG, "NONE: ");
                 //offset是让快进快退不要那么敏感的值
                 if (Math.abs(distanceX) - Math.abs(distanceY) > offsetX) {
                     mScrollMode = ScrollMode.FF_REW;

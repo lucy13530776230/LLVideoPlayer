@@ -1,4 +1,4 @@
-package com.lljy.custommediaplayer.view;
+package com.lljy.custommediaplayer.view.engine;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -66,33 +66,46 @@ public class TencentVideoPlayer extends AbsVideoPlayer implements ITXVodPlayList
 
     @Override
     protected void initPlayer() {
-        release();
-        //初始化腾讯视频播放器
-        mLivePlayer = new TXVodPlayer(mContext);
-        mPlayerView = new TXCloudVideoView(mContext);
-        mPlayerView.showLog(false);
-        //添加播放器
-        LayoutParams params = new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-        addView(mPlayerView, params);
-        //设置播放
-        mLivePlayer.setPlayerView(mPlayerView);
-        //播放回调监听
-        mLivePlayer.setVodListener(this);
-        // 硬件加速在1080p解码场景下效果显著，但细节之处并不如想象的那么美好：
-        // (1) 只有 4.3 以上android系统才支持
-        // (2) 兼容性我们目前还仅过了小米华为等常见机型，故这里的返回值您先不要太当真
-        mLivePlayer.enableHardwareDecode(false);
-        mLivePlayer.setRenderRotation(TXLiveConstants.RENDER_ROTATION_PORTRAIT);
-        mLivePlayer.setRenderMode(TXLiveConstants.RENDER_MODE_ADJUST_RESOLUTION);
-        //是否自动播放，设置不自动不放
-        mLivePlayer.setAutoPlay(true);
-        int result = mVideo == null
-                || mVideo.getInfo() == null
-                || (TextUtils.isEmpty(mVideo.getSrc()) && TextUtils.isEmpty(mVideo.getNativeSrc()))
-                ? 0 :
-                mLivePlayer.startPlay(mVideo.getSrc());
-        if (result != 0) {
-            Log.d(TAG, "播放出错，或者没有视频资源");
+        try {
+            release();
+            //初始化腾讯视频播放器
+            mLivePlayer = new TXVodPlayer(mContext);
+            mPlayerView = new TXCloudVideoView(mContext);
+            mPlayerView.showLog(false);
+            //添加播放器
+            LayoutParams params = new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+            addView(mPlayerView, params);
+            //设置播放
+            mLivePlayer.setPlayerView(mPlayerView);
+            //播放回调监听
+            mLivePlayer.setVodListener(this);
+            // 硬件加速在1080p解码场景下效果显著，但细节之处并不如想象的那么美好：
+            // (1) 只有 4.3 以上android系统才支持
+            // (2) 兼容性我们目前还仅过了小米华为等常见机型，故这里的返回值您先不要太当真
+            mLivePlayer.enableHardwareDecode(false);
+            mLivePlayer.setRenderRotation(TXLiveConstants.RENDER_ROTATION_PORTRAIT);
+            mLivePlayer.setRenderMode(TXLiveConstants.RENDER_MODE_ADJUST_RESOLUTION);
+            //是否自动播放，设置不自动不放
+            mLivePlayer.setAutoPlay(true);
+            if (mVideo == null || mVideo.getInfo() == null || (TextUtils.isEmpty(mVideo.getSrc()) && TextUtils.isEmpty(mVideo.getNativeSrc()))) {
+                if (mListener != null) {
+                    mListener.onError("播放出错，或者没有视频资源");
+                }
+                return;
+            }
+            Log.d(TAG, "腾讯视频播放器播放视频本地地址？：" + mVideo.getNativeSrc() + "\n网络地址：" + mVideo.getSrc());
+            int result = mLivePlayer.startPlay(TextUtils.isEmpty(mVideo.getNativeSrc()) ? mVideo.getSrc() : mVideo.getNativeSrc());
+            if (result != 0) {
+                Log.d(TAG, "播放出错，或者没有视频资源");
+                if (mListener != null) {
+                    mListener.onError("播放出错，或者没有视频资源");
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            if (mListener != null) {
+                mListener.onError("初始化资源出错");
+            }
         }
     }
 
@@ -100,25 +113,30 @@ public class TencentVideoPlayer extends AbsVideoPlayer implements ITXVodPlayList
      * 释放播放器
      */
     public void release() {
-        if (mLivePlayer != null) {
-            mLivePlayer.setVodListener(null);
-            mLivePlayer.stopPlay(true);
-            mLivePlayer = null;
+        try {
+            if (mLivePlayer != null) {
+                mLivePlayer.setVodListener(null);
+                mLivePlayer.stopPlay(true);
+                mLivePlayer = null;
+            }
+
+            if (mPlayerView != null) {
+                mPlayerView.onDestroy();
+                removeView(mPlayerView);
+                mPlayerView = null;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            hasPaused = false;
         }
 
-        if (mPlayerView != null) {
-            mPlayerView.onDestroy();
-            removeView(mPlayerView);
-            mPlayerView = null;
-        }
-
-        hasPaused = false;
     }
 
     @Override
     public void seekTo(int progress) {
         if (mLivePlayer != null) {
-            mLivePlayer.seek(progress);
+            mLivePlayer.seek(progress / 1000);
         }
     }
 
@@ -158,7 +176,7 @@ public class TencentVideoPlayer extends AbsVideoPlayer implements ITXVodPlayList
             int duration = param.getInt(TXLiveConstants.EVT_PLAY_DURATION_MS);
             if (mListener != null) {
                 mListener.onProgress(progress);
-                mListener.onSecondProgress(playable);
+                mListener.onSecondProgress(0);
                 mListener.onTotalTime(duration);
             }
         } else if (event == TXLiveConstants.PLAY_ERR_NET_DISCONNECT || event == TXLiveConstants.PLAY_ERR_FILE_NOT_FOUND) {

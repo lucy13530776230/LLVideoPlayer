@@ -1,4 +1,4 @@
-package com.lljy.custommediaplayer.view;
+package com.lljy.custommediaplayer.view.engine;
 
 import android.content.Context;
 import android.graphics.Color;
@@ -6,22 +6,22 @@ import android.util.AttributeSet;
 import android.widget.RelativeLayout;
 
 import com.lljy.custommediaplayer.entity.VideoBean;
-import com.lljy.custommediaplayer.interfs.IVideoListener;
+import com.lljy.custommediaplayer.interfs.IVideoPlayListener;
 
 /**
  * @desc: 视频播放器统一抽象类，实现的子类目前有：
- * ①腾讯视频播放器{@link com.lljy.custommediaplayer.view.TencentVideoPlayer}
- * ②乐视视频播放器{@link com.lljy.custommediaplayer.view.LeVideoPlayer}
+ * ①腾讯视频播放器{@link TencentVideoPlayer}
+ * ②乐视视频播放器{@link LeVideoPlayer}
  * @author: XieGuangwei
  * @email: 775743075@qq.com
  * create at 2018/11/29 18:57
  */
 
 public abstract class AbsVideoPlayer extends RelativeLayout {
-    protected static final String TAG = "xgw_video";
+    protected static final String TAG = "AbsVideoPlayer";
     protected Context mContext;//上下文
     protected VideoBean mVideo;//视频资源
-    protected IVideoListener mListener;//播放监听
+    protected IVideoPlayListener mListener;//播放监听
     protected boolean hasPaused;//是否暂停了（指的是点击了暂停按钮之类的）
 
     public AbsVideoPlayer(Context context) {
@@ -82,7 +82,7 @@ public abstract class AbsVideoPlayer extends RelativeLayout {
      *
      * @param listener 回调监听
      */
-    public void setListener(IVideoListener listener) {
+    public void setListener(IVideoPlayListener listener) {
         this.mListener = listener;
     }
 

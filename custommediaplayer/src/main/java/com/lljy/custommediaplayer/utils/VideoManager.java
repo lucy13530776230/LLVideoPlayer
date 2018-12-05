@@ -10,6 +10,7 @@ import com.lecloud.sdk.api.stats.IAppStats;
 import com.lecloud.sdk.api.stats.ICdeSetting;
 import com.lecloud.sdk.config.LeCloudPlayerConfig;
 import com.lecloud.sdk.listener.OnInitCmfListener;
+import com.lljy.custommediaplayer.download.VideoDownloadManager;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -20,14 +21,17 @@ import java.util.List;
  */
 
 public class VideoManager {
-    private static final String TAG = "xgw_video";
+    private static final String TAG = "VideoManager";
     private static VideoManager instance;
     private Application app;
     private boolean cdeInitSuccess;
+
     public static VideoManager getInstance() {
         if (instance == null) {
             synchronized (VideoManager.class) {
-                instance = new VideoManager();
+                if (instance == null) {
+                    instance = new VideoManager();
+                }
             }
         }
         return instance;
@@ -36,6 +40,7 @@ public class VideoManager {
     public void initApp(Application app) {
         this.app = app;
         initLePlayer(app);
+        VideoDownloadManager.getInstance().checkExpireVideos();
     }
 
     /**

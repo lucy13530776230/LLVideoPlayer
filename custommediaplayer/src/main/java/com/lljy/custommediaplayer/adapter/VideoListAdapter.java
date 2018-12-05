@@ -1,6 +1,7 @@
 package com.lljy.custommediaplayer.adapter;
 
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.widget.ImageView;
 
 import com.chad.library.adapter.base.BaseQuickAdapter;
@@ -12,42 +13,36 @@ import com.lljy.custommediaplayer.utils.VideoCoverUtils;
 import java.util.List;
 
 /**
- * 视频列表适配器
+ * @desc: 视频列表适配器
+ * @author: XieGuangwei
+ * @email: 775743075@qq.com
+ * create at 2018/12/4 14:08
  */
-public class VideoListAdapter extends BaseQuickAdapter<VideoBean, BaseViewHolder> {
-    private int playingPos;//正在播放的视频
 
-    public VideoListAdapter(int layoutResId, @Nullable List<VideoBean> data) {
+public class VideoListAdapter extends BaseQuickAdapter<VideoBean, BaseViewHolder> {
+    public VideoListAdapter(@Nullable List<VideoBean> data) {
         super(R.layout.item_video, data);
     }
 
     @Override
     protected void convert(BaseViewHolder helper, VideoBean item) {
-        int pos = helper.getAdapterPosition();
-        boolean isPlaying = isPlaying(pos);
+        boolean isPlaying = item.isPlaying();
+        Log.d("adapter", "notify:" + helper.getAdapterPosition());
         helper.setVisible(R.id.mongli_view, !isPlaying)
                 .setVisible(R.id.center_name_tv, !isPlaying)
                 .setVisible(R.id.bottom_name_tv, isPlaying).setText(R.id.center_name_tv, item.getVideoName())
                 .setText(R.id.bottom_name_tv, item.getVideoName()).addOnClickListener(R.id.item_video_iv);
         helper.getView(R.id.child_root_rl).setSelected(isPlaying);
-        VideoCoverUtils.load(mContext, (ImageView) helper.getView(R.id.item_video_iv), item);
-    }
-
-    private boolean isPlaying(int position) {
-        return playingPos == position;
+        VideoCoverUtils.load(mContext, helper.getView(R.id.item_video_iv), item);
     }
 
     public void setPlay(int position) {
-        if (position != playingPos) {
-            int size = getData().size();
-            int tempPos = this.playingPos;
-            playingPos = position;
-            if (tempPos <= getData().size() - 1) {
-                notifyItemChanged(tempPos);
-            }
-            if (playingPos <= getData().size() - 1) {
-                notifyItemChanged(playingPos);
+        for (int i = 0; i < getData().size(); i++) {
+            VideoBean videoBean = getData().get(i);
+            if (videoBean != null) {
+                videoBean.setPlaying(position == i);
             }
         }
+        notifyDataSetChanged();
     }
 }

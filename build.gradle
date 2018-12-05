@@ -20,6 +20,8 @@ allprojects {
         google()
         jcenter()
         maven { url 'https://jitpack.io' }
+        //下载仓库
+        maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
     }
 }
 

@@ -6,15 +6,15 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <com.lljy.custommediaplayer.view.CustomVideoView
+    <com.lljy.custommediaplayer.view.player.CustomListVideoPlayer
         android:id="@+id/video_view"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"></com.lljy.custommediaplayer.view.CustomVideoView>
+        android:layout_height="match_parent"></com.lljy.custommediaplayer.view.player.CustomListVideoPlayer>
 
     <Button
         android:id="@+id/select_btn"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="点我选择视频" />
+        android:text="点我选择视频下载" />
 
 </android.support.constraint.ConstraintLayout>

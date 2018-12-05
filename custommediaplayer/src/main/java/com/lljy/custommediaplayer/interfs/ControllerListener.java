@@ -1,4 +1,4 @@
-package com.lljy.custommediaplayer.gesture;
+package com.lljy.custommediaplayer.interfs;
 
 public interface ControllerListener {
     /**

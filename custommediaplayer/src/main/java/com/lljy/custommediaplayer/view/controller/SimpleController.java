@@ -1,10 +1,11 @@
-package com.lljy.custommediaplayer.view;
+package com.lljy.custommediaplayer.view.controller;
 
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.View;
 
 import com.lljy.custommediaplayer.R;
+import com.lljy.custommediaplayer.interfs.ControllerListener;
 
 /**
  * @desc: 简单的播放器控制页
@@ -14,7 +15,7 @@ import com.lljy.custommediaplayer.R;
  * create at 2018/11/30 10:27
  */
 
-public class SimpleController extends AbsController {
+public class SimpleController extends AbsController<ControllerListener> {
     public SimpleController(Context context) {
         super(context);
     }
@@ -31,9 +32,10 @@ public class SimpleController extends AbsController {
      * 给子类初始化拓展控件用的
      *
      * @param contentView 内容view
+     * @param context     上下文
      */
     @Override
-    protected void initExtensionViews(View contentView) {
+    protected void initExtensionViews(View contentView, Context context) {
 
     }
 
@@ -45,5 +47,10 @@ public class SimpleController extends AbsController {
     @Override
     protected int getLayoutId() {
         return R.layout.simple_controller_layout;
+    }
+
+    @Override
+    protected void onCompleteHandle() {
+
     }
 }
