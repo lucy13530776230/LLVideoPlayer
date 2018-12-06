@@ -66,6 +66,10 @@ public class AppConfig extends Application {
 
 **(1)列表设置资源**
 
+图示：
+
+![](http://git.cke123.com/XieGuangwei/CustomVideoPlayer/src/master/screenshot/list_cap.png)
+
 ```java
 mVideoView = findViewById(R.id.video_view);//初始化视频播放器
 mVideoView.setController(new ListController(this));//设置皮肤为列表
