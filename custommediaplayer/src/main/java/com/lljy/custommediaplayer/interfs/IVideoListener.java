@@ -17,4 +17,16 @@ public interface IVideoListener {
      * 通知调用者关闭全屏
      */
     void onExitFullScreen();
+
+    /**
+     * 播放出错
+     *
+     * @param msg 错误信息
+     */
+    void onError(String msg);
+
+    /**
+     * 播放完成
+     */
+    void onComplete();
 }

@@ -94,14 +94,14 @@ public class LeVideoPlayer extends AbsVideoPlayer implements VideoViewListener {
             videoView.setVideoViewListener(this);
             //添加播放器
             addView((View) videoView, VideoLayoutParams.computeContainerSize(mContext, 16, 9));
-            if (mVideo != null && mVideo.getInfo() != null) {
-                String nativeUrl = mVideo.getNativeSrc();
+            if (mVideo != null) {
+                String nativeUrl = mVideo.getNativeUrl();
                 if (!TextUtils.isEmpty(nativeUrl)) {
                     Log.d(TAG, "乐视播本地：" + nativeUrl);
                     videoView.setDataSource(nativeUrl);
-                } else if (!TextUtils.isEmpty(mVideo.getInfo().getUu()) && !TextUtils.isEmpty(mVideo.getInfo().getVu())) {
-                    String uuid = mVideo.getInfo().getUu();
-                    String vuid = mVideo.getInfo().getVu();
+                } else if (!TextUtils.isEmpty(mVideo.getUu()) && !TextUtils.isEmpty(mVideo.getVu())) {
+                    String uuid = mVideo.getUu();
+                    String vuid = mVideo.getVu();
                     Log.d(TAG, "乐视播网络uuid:" + uuid + ",vuid:" + vuid);
                     Bundle bundle = new Bundle();
                     bundle.putInt(PlayerParams.KEY_PLAY_MODE, PlayerParams.VALUE_PLAYER_VOD);

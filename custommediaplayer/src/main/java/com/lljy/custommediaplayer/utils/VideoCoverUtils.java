@@ -7,8 +7,7 @@ import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestBuilder;
-import com.lljy.custommediaplayer.entity.VideoBean;
-import com.lljy.custommediaplayer.entity.VideoInfo;
+import com.lljy.custommediaplayer.entity.VideoEntity;
 
 /**
  * Created by XieGuangwei on 2018/4/13.
@@ -20,17 +19,16 @@ public class VideoCoverUtils {
      *
      * @param context
      * @param imageView
-     * @param videoBean
+     * @param videoEntity
      */
-    public static void load(Context context, ImageView imageView, VideoBean videoBean) {
-        if (imageView == null || context == null || videoBean == null || videoBean.getInfo() == null) {
+    public static void load(Context context, ImageView imageView, VideoEntity videoEntity) {
+        if (imageView == null || context == null || videoEntity == null) {
             return;
         }
-        VideoInfo info = videoBean.getInfo();
         String cover;
-        String coverUrl = info.getThumbnails();
-        String nativeUrl = videoBean.getNativeSrc();
-        String networkUrl = videoBean.getSrc();
+        String coverUrl = videoEntity.getCoverUrl();
+        String nativeUrl = videoEntity.getNativeUrl();
+        String networkUrl = videoEntity.getNetUrl();
         if (!TextUtils.isEmpty(coverUrl)) {
             cover = coverUrl;
         } else if (!TextUtils.isEmpty(nativeUrl)) {

@@ -17,8 +17,9 @@ import com.liulishuo.okdownload.core.breakpoint.BreakpointInfo;
 import com.liulishuo.okdownload.core.cause.EndCause;
 import com.liulishuo.okdownload.core.listener.DownloadListener4WithSpeed;
 import com.liulishuo.okdownload.core.listener.assist.Listener4SpeedAssistExtend;
+import com.lljy.custommediaplayer.constants.VideoEngineType;
 import com.lljy.custommediaplayer.constants.VideoSpKey;
-import com.lljy.custommediaplayer.entity.VideoBean;
+import com.lljy.custommediaplayer.entity.VideoEntity;
 import com.lljy.custommediaplayer.utils.FileUtils;
 import com.lljy.custommediaplayer.utils.SPUtils;
 import com.lljy.custommediaplayer.utils.VideoManager;
@@ -235,63 +236,77 @@ public class VideoDownloadManager {
     /**
      * 添加下载的视频
      *
-     * @param videoBean
+     * @param videoEntity
      */
-    public void addDownloadVideo(VideoBean videoBean) {
+    public void addDownloadVideo(VideoEntity videoEntity) {
         try {
-            if (videoBean != null && videoBean.getInfo() != null && !TextUtils.isEmpty(downloadPath) && !TextUtils.isEmpty(videoBean.getSource()) && !TextUtils.isEmpty(videoBean.getVideo_id())) {
+            if (videoEntity != null && !TextUtils.isEmpty(downloadPath) && !TextUtils.isEmpty(videoEntity.getVideoEngineType()) && !TextUtils.isEmpty(videoEntity.getId())) {
                 String uniqueKey;
-                String source = videoBean.getSource();
-                String videoId = videoBean.getVideo_id();
-                String uu = videoBean.getInfo().getUu();
-                String vu = videoBean.getInfo().getVu();
-                String url = videoBean.getSrc();
+                String videoEngineType = videoEntity.getVideoEngineType();
+                String videoId = videoEntity.getId();
+                String uu = videoEntity.getUu();
+                String vu = videoEntity.getVu();
+                String url = videoEntity.getNetUrl();
                 //判断本地是否已下载过该视频
-                if (!TextUtils.isEmpty(uu) && !TextUtils.isEmpty(vu)) {
-                    //使用乐视sdk下载引擎
-                    Log.d(TAG, "使用乐视sdk下载引擎");
-                    uniqueKey = uu + vu;
-                    if ("1".equals(getNativeUrl(uniqueKey))) {
-                        Log.d(TAG, "视频正在下载，不用重新下载");
-                        return;
+                if (!TextUtils.isEmpty(videoEngineType)) {
+                    if (VideoEngineType.TYPE_LETV.equals(videoEngineType) && !TextUtils.isEmpty(uu) && !TextUtils.isEmpty(vu)) {
+                        //使用乐视sdk下载引擎
+                        Log.d(TAG, "使用乐视sdk下载引擎");
+                        uniqueKey = uu + vu;
+                        if ("1".equals(getNativeUrl(uniqueKey))) {
+                            Log.d(TAG, "视频正在下载，不用重新下载");
+                            return;
+                        }
+                        if (isVideoExits(getNativeUrl(uniqueKey))) {
+                            Log.d(TAG, "视频已存在，不用重新下载");
+                            return;
+                        }
+                        //添加下载记录，表示该视频需要下载
+                        addDownloadRecord(uniqueKey, "0");
+                        DownloadCenter downloadCenter = DownloadCenter.getInstances(VideoManager.getInstance().getApp());
+                        downloadCenter.setDownloadSavePath(downloadPath);
+                        downloadCenter.registerDownloadObserver(observer);
+                        LeDownloadInfo info = new LeDownloadInfo();
+                        info.setUu(uu);
+                        info.setVu(vu);
+                        downloadCenter.downloadVideo(info);
+                        if (leTasks != null) {
+                            leTasks.add(info);
+                        }
+                    } else if (VideoEngineType.TYPE_TENCENT.equals(videoEngineType) && !TextUtils.isEmpty(url)) {
+                        //使用OkDownloader下载引擎
+                        Log.d(TAG, "使用OkDownloader下载引擎");
+                        uniqueKey = videoEngineType + videoId;
+                        if ("1".equals(getNativeUrl(uniqueKey))) {
+                            Log.d(TAG, "视频正在下载，不用重新下载");
+                            return;
+                        }
+                        if (isVideoExits(getNativeUrl(uniqueKey))) {
+                            Log.d(TAG, "视频已存在，不用重新下载");
+                            return;
+                        }
+                        addDownloadRecord(uniqueKey, "0");
+                        //父目录不能存在则创建下载目录
+                        File parentFile = new File(downloadPath);
+                        if (!parentFile.exists()) {
+                            parentFile.mkdirs();
+                        }
+                        //配置下载路径、名称
+                        final DownloadTask downloadTask = new DownloadTask.Builder(url, parentFile)
+                                .setMinIntervalMillisCallbackProcess(16)
+                                .setPassIfAlreadyCompleted(false).build();
+                        //设置tag
+                        downloadTask.setTag(videoEntity.getVideoEngineType() + videoEntity.getId());
+                        //开始下载
+                        downloadTask.enqueue(downloadListener4WithSpeed);
+                        if (okTasks != null) {
+                            okTasks.add(downloadTask);
+                        }
+                    } else {
+                        Log.d(TAG, "未找到支持的下载引擎，请先指定视频引擎");
                     }
-                    if (isVideoExits(getNativeUrl(uniqueKey))) {
-                        Log.d(TAG, "视频已存在，不用重新下载");
-                        return;
-                    }
-                    //添加下载记录，表示该视频需要下载
-                    addDownloadRecord(uniqueKey, "0");
-                    DownloadCenter downloadCenter = DownloadCenter.getInstances(VideoManager.getInstance().getApp());
-                    downloadCenter.setDownloadSavePath(downloadPath);
-                    downloadCenter.registerDownloadObserver(observer);
-                    LeDownloadInfo info = new LeDownloadInfo();
-                    info.setUu(uu);
-                    info.setVu(vu);
-                    downloadCenter.downloadVideo(info);
-                    if (leTasks != null) {
-                        leTasks.add(info);
-                    }
-                } else if (!TextUtils.isEmpty(url)) {
-                    //使用OkDownloader下载引擎
-                    Log.d(TAG, "使用OkDownloader下载引擎");
-                    uniqueKey = source + videoId;
-                    addDownloadRecord(uniqueKey, "0");
-                    //父目录不能存在则创建下载目录
-                    File parentFile = new File(downloadPath);
-                    if (!parentFile.exists()) {
-                        parentFile.mkdirs();
-                    }
-                    //配置下载路径、名称
-                    final DownloadTask downloadTask = new DownloadTask.Builder(url, parentFile)
-                            .setMinIntervalMillisCallbackProcess(16)
-                            .setPassIfAlreadyCompleted(false).build();
-                    //设置tag
-                    downloadTask.setTag(videoBean.getSource() + videoBean.getVideo_id());
-                    //开始下载
-                    downloadTask.enqueue(downloadListener4WithSpeed);
-                    if (okTasks != null) {
-                        okTasks.add(downloadTask);
-                    }
+                } else {
+                    Log.d(TAG, "未找到支持的下载引擎，请先指定视频引擎");
                 }
             }
         } catch (Exception e) {
@@ -400,8 +415,6 @@ public class VideoDownloadManager {
                         if ("0".equals(nativeUrl) || "1".equals(nativeUrl)) {
                             DownloadCenter.getInstances(VideoManager.getInstance().getApp()).cancelDownload(info, true);
                             removeDownloadRecord(uniqueKey);
-                        } else {
-                            DownloadCenter.getInstances(VideoManager.getInstance().getApp()).cancelDownload(info, false);
                         }
                     }
                 }

@@ -1,6 +1,6 @@
 package com.lljy.custommediaplayer.interfs;
 
-import com.lljy.custommediaplayer.entity.VideoBean;
+import com.lljy.custommediaplayer.entity.VideoEntity;
 
 /**
  * @desc: 视频播放列表回调接口
@@ -13,16 +13,16 @@ public interface ListControllerListener extends ControllerListener {
     /**
      * 点击了哪个要播放的视频
      *
-     * @param videoBean 要播放的视频
+     * @param videoEntity 要播放的视频
      */
-    void onVideoSelected(VideoBean videoBean);
+    void onVideoSelected(VideoEntity videoEntity);
 
     /**
      * 删除了正在播放的视频
      *
-     * @param videoBean 删除的视频
+     * @param videoEntity 删除的视频
      */
-    void onPlayedVideoDeleted(VideoBean videoBean);
+    void onPlayedVideoDeleted(VideoEntity videoEntity);
 
     /**
      * 点击了全屏

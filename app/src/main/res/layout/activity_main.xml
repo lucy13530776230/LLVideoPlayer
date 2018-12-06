@@ -6,11 +6,11 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <com.lljy.custommediaplayer.view.player.CustomListVideoPlayer
+    <com.lljy.custommediaplayer.view.player.SimpleVideoPlayer
         android:id="@+id/video_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:needTouchControlProgress="true"
-        app:needTouchControlVol="true"></com.lljy.custommediaplayer.view.player.CustomListVideoPlayer>
+        app:needTouchControlVol="true"></com.lljy.custommediaplayer.view.player.SimpleVideoPlayer>
 
 </android.support.constraint.ConstraintLayout>

@@ -5,7 +5,7 @@ import android.graphics.Color;
 import android.util.AttributeSet;
 import android.widget.RelativeLayout;
 
-import com.lljy.custommediaplayer.entity.VideoBean;
+import com.lljy.custommediaplayer.entity.VideoEntity;
 import com.lljy.custommediaplayer.interfs.IVideoPlayListener;
 
 /**
@@ -20,7 +20,7 @@ import com.lljy.custommediaplayer.interfs.IVideoPlayListener;
 public abstract class AbsVideoPlayer extends RelativeLayout {
     protected static final String TAG = "AbsVideoPlayer";
     protected Context mContext;//上下文
-    protected VideoBean mVideo;//视频资源
+    protected VideoEntity mVideo;//视频资源
     protected IVideoPlayListener mListener;//播放监听
     protected boolean hasPaused;//是否暂停了（指的是点击了暂停按钮之类的）
 
@@ -50,10 +50,10 @@ public abstract class AbsVideoPlayer extends RelativeLayout {
     /**
      * 设置视频资源
      *
-     * @param videoBean
+     * @param videoEntity
      */
-    public void setVideoSource(VideoBean videoBean) {
-        this.mVideo = videoBean;
+    public void setVideoSource(VideoEntity videoEntity) {
+        this.mVideo = videoEntity;
         initPlayer();
     }
 

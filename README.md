@@ -29,7 +29,91 @@
          android:process=":cmf" />
 ```
 
-##### 3.初始化信息（最好在Application.java的onCreate()方法初始化
+##### 3.引入播放器库工程
+
+project/build.gradle
+
+```groovy
+buildscript {
+    
+    repositories {
+        google()
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:3.2.1'
+        
+
+        // NOTE: Do not place your application dependencies here; they belong
+        // in the individual module build.gradle files
+    }
+}
+
+allprojects {
+    repositories {
+        google()
+        jcenter()
+        maven { url 'https://jitpack.io' }
+        //下载仓库
+        maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+    }
+}
+```
+
+app/build.gradle
+
+```groovy
+android {
+    compileSdkVersion 28
+    defaultConfig {
+        applicationId "xxx"
+        minSdkVersion 15
+        targetSdkVersion 28
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        multiDexEnabled true
+        ndk {
+            abiFilters "armeabi", "armeabi-v7a"
+        }
+    }
+
+
+
+    sourceSets {
+        main {
+            jniLibs.srcDirs = ['libs']
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+repositories {
+    flatDir {
+        dirs project(':custommediaplayer').file('libs')
+        dirs project(':LePlayerSdk').file('libs')
+    }
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    //design
+    implementation 'com.android.support:appcompat-v7:28.0.0'
+    implementation 'com.android.support.constraint:constraint-layout:1.1.3'
+    //test
+    testImplementation 'junit:junit:4.12'
+    androidTestImplementation 'com.android.support.test:runner:1.0.2'
+    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+    implementation project(':custommediaplayer')
+}
+```
+
+
+
+##### 4.初始化信息（最好在Application.java的onCreate()方法初始化
 
 ```java
 public class AppConfig extends Application {
@@ -46,7 +130,17 @@ public class AppConfig extends Application {
 
 
 
-##### 4.layout里面添加播放器
+##### 5.播放
+
+​	播放时，只要设置好资源，自动选择播放本地视频还是网络视频，会自动选择用那个播放引擎播放本地视频还是网络视频。
+
+**(1)列表设置资源**
+
+图示：
+
+![](http://git.cke123.com/XieGuangwei/CustomVideoPlayer/netUrl/master/screenshot/list_cap.png)
+
+xml
 
 ```xml
 <com.lljy.custommediaplayer.view.player.CustomListVideoPlayer
@@ -57,18 +151,13 @@ public class AppConfig extends Application {
         app:needTouchControlVol="true"></com.lljy.custommediaplayer.view.player.CustomListVideoPlayer>
 ```
 
-    参数说明：
-    	app:needTouchControlProgress="true"//是否可手势滑动控制进度
-        app:needTouchControlVol="true"//是否可手势滑动控制音量
-##### 5.播放
+```java
+参数说明：
+needTouchControlProgress="true"//是否可手势滑动控制进度
+needTouchControlVol="true"//是否可手势滑动控制音量
+```
 
-​	播放时，只要设置好资源，自动选择播放本地视频还是网络视频，会自动选择用那个播放引擎播放本地视频还是网络视频。
-
-**(1)列表设置资源**
-
-图示：
-
-![](http://git.cke123.com/XieGuangwei/CustomVideoPlayer/src/master/screenshot/list_cap.png)
+java
 
 ```java
 mVideoView = findViewById(R.id.video_view);//初始化视频播放器
@@ -110,7 +199,7 @@ video3.setSource("letv");
 video3.setInfo(info3);
 videos.add(video3);
 
-//注意：info、video_id、source、一定要设置，否则不能播放和缓存
+//注意：info、id、videoEngineType、一定要设置，否则不能播放和缓存
 //回调，记录全屏，全屏需手动设置撑开布局
 mVideoView.setListener(new IVideoListener() {
             @Override
@@ -125,11 +214,11 @@ mVideoView.setListener(new IVideoListener() {
         });
 ```
 
-**（2）.单个视频**
+**（2）单个视频**
 
 
 
-**(3).生命周期**
+**(3)生命周期**
 
 ```java
 @Override
@@ -151,6 +240,6 @@ protected void onDestroy() {
 }
 ```
 
-##### 4.离线缓存
+##### 6.离线缓存
 
 ​	全自动离线缓存，不用处理，本地没有播网络，本地有播本地。

@@ -2,12 +2,11 @@ package com.lljy.custommediaplayer.adapter;
 
 import android.support.annotation.Nullable;
 import android.util.Log;
-import android.widget.ImageView;
 
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.chad.library.adapter.base.BaseViewHolder;
 import com.lljy.custommediaplayer.R;
-import com.lljy.custommediaplayer.entity.VideoBean;
+import com.lljy.custommediaplayer.entity.VideoEntity;
 import com.lljy.custommediaplayer.utils.VideoCoverUtils;
 
 import java.util.List;
@@ -19,13 +18,13 @@ import java.util.List;
  * create at 2018/12/4 14:08
  */
 
-public class VideoListAdapter extends BaseQuickAdapter<VideoBean, BaseViewHolder> {
-    public VideoListAdapter(@Nullable List<VideoBean> data) {
+public class VideoListAdapter extends BaseQuickAdapter<VideoEntity, BaseViewHolder> {
+    public VideoListAdapter(@Nullable List<VideoEntity> data) {
         super(R.layout.item_video, data);
     }
 
     @Override
-    protected void convert(BaseViewHolder helper, VideoBean item) {
+    protected void convert(BaseViewHolder helper, VideoEntity item) {
         boolean isPlaying = item.isPlaying();
         Log.d("adapter", "notify:" + helper.getAdapterPosition());
         helper.setVisible(R.id.mongli_view, !isPlaying)
@@ -38,9 +37,9 @@ public class VideoListAdapter extends BaseQuickAdapter<VideoBean, BaseViewHolder
 
     public void setPlay(int position) {
         for (int i = 0; i < getData().size(); i++) {
-            VideoBean videoBean = getData().get(i);
-            if (videoBean != null) {
-                videoBean.setPlaying(position == i);
+            VideoEntity videoEntity = getData().get(i);
+            if (videoEntity != null) {
+                videoEntity.setPlaying(position == i);
             }
         }
         notifyDataSetChanged();

@@ -3,6 +3,7 @@ package com.lljy.custommediaplayer.view.player;
 import android.content.Context;
 import android.util.AttributeSet;
 
+import com.lljy.custommediaplayer.entity.VideoEntity;
 import com.lljy.custommediaplayer.interfs.ControllerListener;
 import com.lljy.custommediaplayer.view.controller.SimpleController;
 
@@ -54,5 +55,14 @@ public class SimpleVideoPlayer extends AbsCustomVideoPlayer<SimpleController> im
     @Override
     public void onPlayOrPauseClick() {
         super.playOrPause();
+    }
+
+    /**
+     * 设置视频播放资源
+     *
+     * @param videoEntity 视频
+     */
+    public void setVideo(VideoEntity videoEntity) {
+        setVideoSource(videoEntity);
     }
 }

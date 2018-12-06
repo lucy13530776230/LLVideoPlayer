@@ -10,7 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_centerInParent="true"
-        android:scaleType="fitXY"
+        android:scaleType="centerCrop"
         android:visibility="gone" />
 
     <include layout="@layout/video_loading_layout" />
@@ -28,8 +28,8 @@
         android:id="@+id/video_list_rl"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
+        android:layout_above="@+id/play_progress"
         android:layout_alignParentRight="true"
-        android:layout_marginBottom="80dp"
         android:background="#66000000">
 
         <android.support.v7.widget.RecyclerView

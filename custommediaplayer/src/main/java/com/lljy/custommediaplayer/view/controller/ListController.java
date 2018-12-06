@@ -18,7 +18,7 @@ import com.lljy.custommediaplayer.adapter.VideoListAdapter;
 import com.lljy.custommediaplayer.constants.PlayMode;
 import com.lljy.custommediaplayer.constants.ScreenStatus;
 import com.lljy.custommediaplayer.constants.VideoStatus;
-import com.lljy.custommediaplayer.entity.VideoBean;
+import com.lljy.custommediaplayer.entity.VideoEntity;
 import com.lljy.custommediaplayer.interfs.ControllerListener;
 import com.lljy.custommediaplayer.interfs.ListControllerListener;
 import com.lljy.custommediaplayer.utils.PlayModeUtils;
@@ -104,14 +104,14 @@ public class ListController extends AbsController<ListControllerListener> {
         }
         if (mAdapter != null && mAdapter.getData().size() > 0) {
             for (int i = 0; i < mAdapter.getData().size(); i++) {
-                VideoBean videoBean = mAdapter.getData().get(i);
+                VideoEntity videoEntity = mAdapter.getData().get(i);
                 //找到正在播放的视频
-                if (videoBean != null && videoBean.isPlaying()) {
+                if (videoEntity != null && videoEntity.isPlaying()) {
                     if (isPlayCache) {
                         //有本地链接，需要重播，把本地视频清空，播网络视频
-                        videoBean.setNativeSrc(null);
+                        videoEntity.setNativeUrl(null);
                         showErrorLayout(errorMsg + "，即将重新播放该视频");
-                        delayPlayNextOrReplay(videoBean);
+                        delayPlayNextOrReplay(videoEntity);
                     } else {
                         //判断是否只有一个视频，大于一个视频才播放下一个视频
                         showErrorLayout(errorMsg + "，即将播放下一个视频");
@@ -139,11 +139,11 @@ public class ListController extends AbsController<ListControllerListener> {
     /**
      * 播放下一个视频
      *
-     * @param videoBean
+     * @param videoEntity
      */
-    private void delayPlayNextOrReplay(VideoBean videoBean) {
+    private void delayPlayNextOrReplay(VideoEntity videoEntity) {
         if (mHandler != null && mPlayNextRunnable != null) {
-            mPlayNextRunnable.setVideoBean(videoBean);
+            mPlayNextRunnable.setVideoEntity(videoEntity);
             mHandler.removeCallbacks(mPlayNextRunnable);
             mHandler.postDelayed(mPlayNextRunnable, delayMillis);
         }
@@ -175,14 +175,14 @@ public class ListController extends AbsController<ListControllerListener> {
      */
     private static class PlayNextRunnable implements Runnable {
         private WeakReference<ListController> ref;
-        private VideoBean videoBean;
+        private VideoEntity videoEntity;
 
         public PlayNextRunnable(ListController controller) {
             this.ref = new WeakReference<>(controller);
         }
 
-        public void setVideoBean(VideoBean videoBean) {
-            this.videoBean = videoBean;
+        public void setVideoEntity(VideoEntity videoEntity) {
+            this.videoEntity = videoEntity;
         }
 
         @Override
@@ -195,7 +195,7 @@ public class ListController extends AbsController<ListControllerListener> {
                     handler.removeCallbacks(this);
                 }
                 if (listener != null) {
-                    listener.onVideoSelected(videoBean);
+                    listener.onVideoSelected(videoEntity);
                 }
             }
         }
@@ -236,7 +236,7 @@ public class ListController extends AbsController<ListControllerListener> {
             mAdapter.setOnItemChildClickListener((adapter, view, position) -> {
                 if (mListener != null) {
                     setPlay(position);
-                    mListener.onVideoSelected((VideoBean) adapter.getItem(position));
+                    mListener.onVideoSelected((VideoEntity) adapter.getItem(position));
                 }
             });
         }
@@ -286,8 +286,8 @@ public class ListController extends AbsController<ListControllerListener> {
             if (PlayModeUtils.getPlayMode() == PlayMode.PLAY_MODE_SINGLE_CYCLE) {
                 int playedPosition = 0;
                 for (int i = 0; i < mAdapter.getData().size(); i++) {
-                    VideoBean videoBean = mAdapter.getData().get(i);
-                    if (videoBean != null && videoBean.isPlaying()) {
+                    VideoEntity videoEntity = mAdapter.getData().get(i);
+                    if (videoEntity != null && videoEntity.isPlaying()) {
                         playedPosition = i;
                         break;
                     }
@@ -296,8 +296,8 @@ public class ListController extends AbsController<ListControllerListener> {
                 setPlay(playedPosition);
             } else if (playMode == PlayMode.PLAY_MODE_LIST_CYCLE) {//列表循环模式---播放完最后一个视频播放第一个视频
                 for (int i = 0; i < mAdapter.getData().size(); i++) {
-                    VideoBean videoBean = mAdapter.getData().get(i);
-                    if (videoBean != null && videoBean.isPlaying()) {
+                    VideoEntity videoEntity = mAdapter.getData().get(i);
+                    if (videoEntity != null && videoEntity.isPlaying()) {
                         if (i < mAdapter.getData().size() - 1) {
                             mListener.onVideoSelected(mAdapter.getData().get(i + 1));
                             setPlay(i + 1);
@@ -311,8 +311,8 @@ public class ListController extends AbsController<ListControllerListener> {
             } else {//顺序播放-----播放完最后一个视频不再继续播放，点击播放按钮后再继续播放最后一个视频
                 for (int i = 0; i < mAdapter.getData().size(); i++) {
                     if (mAdapter != null) {
-                        VideoBean videoBean = mAdapter.getData().get(i);
-                        if (videoBean != null && videoBean.isPlaying()) {
+                        VideoEntity videoEntity = mAdapter.getData().get(i);
+                        if (videoEntity != null && videoEntity.isPlaying()) {
                             if (i < mAdapter.getData().size() - 1) {
                                 mListener.onVideoSelected(mAdapter.getData().get(i + 1));
                                 setPlay(i + 1);
@@ -333,20 +333,20 @@ public class ListController extends AbsController<ListControllerListener> {
      *
      * @param videos 视频列表
      */
-    public void setVideos(List<VideoBean> videos) {
+    public void setVideos(List<VideoEntity> videos) {
         if (videos != null && videos.size() > 0 && mAdapter != null) {
             int playedPosition = 0;
             boolean hasPlayedPosition = false;
             //去空
-            Iterator<VideoBean> iterator = videos.iterator();
+            Iterator<VideoEntity> iterator = videos.iterator();
             while (iterator.hasNext()) {
                 if (iterator.next() == null) {
                     iterator.remove();
                 }
             }
             for (int i = 0; i < videos.size(); i++) {
-                VideoBean videoBean = videos.get(i);
-                if (videoBean.isPlaying()) {
+                VideoEntity videoEntity = videos.get(i);
+                if (videoEntity.isPlaying()) {
                     playedPosition = i;
                     hasPlayedPosition = true;
                     break;
@@ -371,13 +371,13 @@ public class ListController extends AbsController<ListControllerListener> {
      *
      * @param videos 添加的视频列表
      */
-    public void addVideos(List<VideoBean> videos) {
+    public void addVideos(List<VideoEntity> videos) {
         if (videos != null && videos.size() > 0 && mAdapter != null) {
-            List<VideoBean> currentVideos = mAdapter.getData();
+            List<VideoEntity> currentVideos = mAdapter.getData();
             for (int i = 0; i < videos.size(); i++) {
-                VideoBean videoBean = videos.get(i);
-                if (videoBean != null && !currentVideos.contains(videoBean)) {
-                    mAdapter.addData(videoBean);
+                VideoEntity videoEntity = videos.get(i);
+                if (videoEntity != null && !currentVideos.contains(videoEntity)) {
+                    mAdapter.addData(videoEntity);
                 }
             }
             Collections.sort(mAdapter.getData());
@@ -390,17 +390,17 @@ public class ListController extends AbsController<ListControllerListener> {
      *
      * @param videos 删除的视频列表
      */
-    public void deleteVideos(List<VideoBean> videos) {
+    public void deleteVideos(List<VideoEntity> videos) {
         if (mAdapter != null && mAdapter.getData().size() > 0 && videos != null && videos.size() > 0) {
             int deletePlayedPosition = -1;
             for (int i = 0; i < videos.size(); i++) {
-                List<VideoBean> currentVideos = mAdapter.getData();
-                VideoBean videoBean = videos.get(i);
-                if (currentVideos.size() > 0 && currentVideos.contains(videoBean)) {
-                    deletePlayedPosition = currentVideos.indexOf(videoBean);
-                    if (videoBean.isPlaying()) {//删除了正在播放的视频，通知播放器停止播放
+                List<VideoEntity> currentVideos = mAdapter.getData();
+                VideoEntity videoEntity = videos.get(i);
+                if (currentVideos.size() > 0 && currentVideos.contains(videoEntity)) {
+                    deletePlayedPosition = currentVideos.indexOf(videoEntity);
+                    if (videoEntity.isPlaying()) {//删除了正在播放的视频，通知播放器停止播放
                         if (mListener != null) {
-                            mListener.onPlayedVideoDeleted(videoBean);
+                            mListener.onPlayedVideoDeleted(videoEntity);
                         }
                     }
                     if (deletePlayedPosition >= 0 && deletePlayedPosition <= currentVideos.size() - 1) {
@@ -410,7 +410,7 @@ public class ListController extends AbsController<ListControllerListener> {
             }
             if (deletePlayedPosition > 0) {
                 //播放第一个视频
-                List<VideoBean> currentVideos = mAdapter.getData();
+                List<VideoEntity> currentVideos = mAdapter.getData();
                 if (currentVideos.size() > 0) {
                     if (mListener != null) {
                         mListener.onVideoSelected(currentVideos.get(0));
@@ -430,16 +430,16 @@ public class ListController extends AbsController<ListControllerListener> {
      *
      * @param orders 视频顺序
      */
-    public void orderVideos(List<VideoBean> orders) {
+    public void orderVideos(List<VideoEntity> orders) {
         //调整播放顺序
         if (orders != null && orders.size() > 0 && mAdapter != null && mAdapter.getData().size() > 0) {
-            final List<VideoBean> videos = mAdapter.getData();
+            final List<VideoEntity> videos = mAdapter.getData();
             for (int i = 0; i < orders.size(); i++) {
-                VideoBean order = orders.get(i);
+                VideoEntity order = orders.get(i);
                 if (order != null && videos.contains(order)) {
                     int position = videos.indexOf(order);
-                    VideoBean old = videos.get(position);
-                    old.setVideo_order(order.getVideo_order());
+                    VideoEntity old = videos.get(position);
+                    old.setOrder(order.getOrder());
                 }
             }
             Collections.sort(videos);

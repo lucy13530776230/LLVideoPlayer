@@ -5,7 +5,7 @@ import android.os.Bundle;
 import android.util.AttributeSet;
 
 import com.lljy.custommediaplayer.constants.VideoStatus;
-import com.lljy.custommediaplayer.entity.VideoBean;
+import com.lljy.custommediaplayer.entity.VideoEntity;
 import com.lljy.custommediaplayer.interfs.ListControllerListener;
 import com.lljy.custommediaplayer.view.controller.AbsController;
 import com.lljy.custommediaplayer.view.controller.ListController;
@@ -48,11 +48,11 @@ public class CustomListVideoPlayer extends AbsCustomVideoPlayer<ListController> 
     /**
      * 点击了哪个要播放的视频
      *
-     * @param videoBean 要播放的视频
+     * @param videoEntity 要播放的视频
      */
     @Override
-    public void onVideoSelected(VideoBean videoBean) {
-        super.setVideoSource(videoBean);
+    public void onVideoSelected(VideoEntity videoEntity) {
+        super.setVideoSource(videoEntity);
     }
 
     /**
@@ -60,7 +60,7 @@ public class CustomListVideoPlayer extends AbsCustomVideoPlayer<ListController> 
      *
      * @param videos 待排序的视频列表
      */
-    public void orderVideo(List<VideoBean> videos) {
+    public void orderVideo(List<VideoEntity> videos) {
         if (mController != null) {
             mController.orderVideos(videos);
         }
@@ -71,7 +71,7 @@ public class CustomListVideoPlayer extends AbsCustomVideoPlayer<ListController> 
      *
      * @param videos 视频列表
      */
-    public void setVideos(List<VideoBean> videos) {
+    public void setVideos(List<VideoEntity> videos) {
         if (mController != null) {
             mController.setVideos(videos);
         }
@@ -82,7 +82,7 @@ public class CustomListVideoPlayer extends AbsCustomVideoPlayer<ListController> 
      *
      * @param videos 待添加的视频列表
      */
-    public void addVideos(List<VideoBean> videos) {
+    public void addVideos(List<VideoEntity> videos) {
         if (mController != null) {
             mController.addVideos(videos);
         }
@@ -93,7 +93,7 @@ public class CustomListVideoPlayer extends AbsCustomVideoPlayer<ListController> 
      *
      * @param videos 删除指定视频
      */
-    public void deleteVideos(List<VideoBean> videos) {
+    public void deleteVideos(List<VideoEntity> videos) {
         if (mController != null) {
             mController.deleteVideos(videos);
         }
@@ -102,11 +102,11 @@ public class CustomListVideoPlayer extends AbsCustomVideoPlayer<ListController> 
     /**
      * 删除了指定视频
      *
-     * @param videoBean 删除的视频
+     * @param videoEntity 删除的视频
      */
     @Override
-    public void onPlayedVideoDeleted(VideoBean videoBean) {
-        if (mVideo != null && mVideo.equals(videoBean)) {
+    public void onPlayedVideoDeleted(VideoEntity videoEntity) {
+        if (mVideo != null && mVideo.equals(videoEntity)) {
             //正在播放视频已被删除，播放下一个视频
             if (mController != null) {
                 mVideo = null;

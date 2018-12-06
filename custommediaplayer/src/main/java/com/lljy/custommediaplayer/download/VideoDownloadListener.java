@@ -1,6 +1,6 @@
 package com.lljy.custommediaplayer.download;
 
-import com.lljy.custommediaplayer.entity.VideoBean;
+import com.lljy.custommediaplayer.entity.VideoEntity;
 
 /**
  * @desc: 下载回调监听
@@ -13,9 +13,9 @@ public interface VideoDownloadListener {
     /**
      * 下载开始
      *
-     * @param videoBean 下载的视频
+     * @param videoEntity 下载的视频
      */
-    void onDownloadStart(VideoBean videoBean);
+    void onDownloadStart(VideoEntity videoEntity);
 
     /**
      * 下载出错
@@ -27,7 +27,7 @@ public interface VideoDownloadListener {
     /**
      * 下载完成
      *
-     * @param videoBean 下载完成的视频
+     * @param videoEntity 下载完成的视频
      */
-    void onDownloadFinished(VideoBean videoBean);
+    void onDownloadFinished(VideoEntity videoEntity);
 }

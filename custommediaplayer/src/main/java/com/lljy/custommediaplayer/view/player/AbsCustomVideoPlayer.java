@@ -12,9 +12,10 @@ import android.widget.RelativeLayout;
 
 import com.lljy.custommediaplayer.R;
 import com.lljy.custommediaplayer.constants.ScreenStatus;
+import com.lljy.custommediaplayer.constants.VideoEngineType;
 import com.lljy.custommediaplayer.constants.VideoStatus;
 import com.lljy.custommediaplayer.download.VideoDownloadManager;
-import com.lljy.custommediaplayer.entity.VideoBean;
+import com.lljy.custommediaplayer.entity.VideoEntity;
 import com.lljy.custommediaplayer.interfs.IVideoListener;
 import com.lljy.custommediaplayer.interfs.IVideoPlayListener;
 import com.lljy.custommediaplayer.view.controller.AbsController;
@@ -32,7 +33,7 @@ import java.io.File;
  * 抽象类实现的方法和功能：
  * ①设置控制器（即设置皮肤）{@link #setController(AbsController)}
  * ②设置背景颜色为黑色
- * ③设置播放资源{@link #setVideoSource(VideoBean)}
+ * ③设置播放资源{@link #setVideoSource(VideoEntity)}
  * ④onPause释放资源{@link #onPause()}，onResume恢复播放{@link #onResume()}
  * ⑤跳转到指定进度播放{@link #seekTo(int)}
  * ⑥开始/暂停{@link #playOrPause()}
@@ -55,7 +56,7 @@ public abstract class AbsCustomVideoPlayer<T extends AbsController> extends Rela
     protected Context mContext;
     protected T mController;
 
-    protected VideoBean mVideo;
+    protected VideoEntity mVideo;
     protected boolean isFirstEnter;//是否是第一次进入
 
     protected int currentProgress;//当前播放进度
@@ -125,34 +126,44 @@ public abstract class AbsCustomVideoPlayer<T extends AbsController> extends Rela
         isFirstEnter = true;
     }
 
-    protected void setVideoSource(VideoBean videoBean) {
+    protected void setVideoSource(VideoEntity videoEntity) {
         currentProgress = 0;
         if (mController != null) {
-            mController.setVideoState(VideoStatus.MEDIA_STATE_PLAY_NEW);
+            Bundle params = new Bundle();
+            if (videoEntity != null) {
+                String cover = videoEntity.getCoverUrl();
+                params.putString(VideoStatus.Constants.PLAY_COVER_URL, cover);
+            }
+            mController.setVideoState(VideoStatus.MEDIA_STATE_PLAY_NEW, params);
         }
-        this.mVideo = videoBean;
-        initPlayer(videoBean);
+        if (videoEntity != null) {
+            this.mVideo = videoEntity.clone();
+        } else {
+            mVideo = null;
+        }
+        initPlayer(mVideo);
     }
 
     /**
      * 初始化播放器
      */
-    private void initPlayer(VideoBean videoBean) {
+    private void initPlayer(VideoEntity videoEntity) {
         release();
-        if (videoBean == null || videoBean.getInfo() == null || TextUtils.isEmpty(videoBean.getVideo_id()) || TextUtils.isEmpty(videoBean.getSource())) {
+        if (videoEntity == null || TextUtils.isEmpty(videoEntity.getId()) || TextUtils.isEmpty(videoEntity.getVideoEngineType())) {
             onError("该视频资源未找到");
             return;
         }
-        String netUrl = videoBean.getSrc();
-        String uuid = videoBean.getInfo().getUu();
-        String vuid = videoBean.getInfo().getVu();
+        String uuid = videoEntity.getUu();
+        String vuid = videoEntity.getVu();
+        String engineType = videoEntity.getVideoEngineType();
         String uniqueKey;
         //腾讯播放器
-        if (!TextUtils.isEmpty(netUrl) && (TextUtils.isEmpty(uuid) || TextUtils.isEmpty(vuid))) {
-            uniqueKey = videoBean.getSource() + videoBean.getVideo_id();
+        if (VideoEngineType.TYPE_TENCENT.equals(engineType)) {
+            uniqueKey = videoEntity.getVideoEngineType() + videoEntity.getId();
             mPlayer = new TencentVideoPlayer(mContext);
             Log.d(TAG, "使用腾讯视频播放引擎");
-        } else if (!TextUtils.isEmpty(uuid) && !TextUtils.isEmpty(vuid)) {
+        } else if (VideoEngineType.TYPE_LETV.equals(engineType)) {
+            //乐视播放器
             uniqueKey = uuid + vuid;
             mPlayer = new LeVideoPlayer(mContext);
             Log.d(TAG, "使用乐视视频播放引擎");
@@ -165,13 +176,13 @@ public abstract class AbsCustomVideoPlayer<T extends AbsController> extends Rela
             nativeUrl = null;
         }
         if (TextUtils.isEmpty(nativeUrl)) {
-            VideoDownloadManager.getInstance().addDownloadVideo(videoBean);
+            VideoDownloadManager.getInstance().addDownloadVideo(videoEntity);
         }
-        mVideo.setNativeSrc(nativeUrl);
+        mVideo.setNativeUrl(nativeUrl);
         LayoutParams params = new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         addView(mPlayer, 0, params);
         mPlayer.setListener(this);
-        mPlayer.setVideoSource(videoBean);
+        mPlayer.setVideoSource(videoEntity);
     }
 
     /**
@@ -293,21 +304,21 @@ public abstract class AbsCustomVideoPlayer<T extends AbsController> extends Rela
             if (mController != null) {
                 Bundle params = new Bundle();
                 params.putString(VideoStatus.Constants.PLAY_ERROR_MSG, errorMsg);
-                boolean isPlayCache = mVideo != null && !TextUtils.isEmpty(mVideo.getNativeSrc());
-                params.putBoolean(VideoStatus.Constants.IS_PLAY_CACHE, mVideo != null && !TextUtils.isEmpty(mVideo.getNativeSrc()) && mVideo.getInfo() != null);
+                boolean isPlayCache = mVideo != null && !TextUtils.isEmpty(mVideo.getNativeUrl());
+                params.putBoolean(VideoStatus.Constants.IS_PLAY_CACHE, mVideo != null && !TextUtils.isEmpty(mVideo.getNativeUrl()));
                 mController.setVideoState(VideoStatus.MEDIA_STATE_ERROR, params);
                 if (isPlayCache) {
-                    String uu = mVideo.getInfo().getUu();
-                    String vu = mVideo.getInfo().getVu();
-                    String source = mVideo.getSource();
-                    String videoId = mVideo.getVideo_id();
+                    String uu = mVideo.getUu();
+                    String vu = mVideo.getVu();
+                    String videoEngineType = mVideo.getVideoEngineType();
+                    String videoId = mVideo.getId();
                     String uniqueKey;
-                    if (!TextUtils.isEmpty(uu) && !TextUtils.isEmpty(vu)) {
+                    if (VideoEngineType.TYPE_LETV.equals(videoEngineType)) {
                         uniqueKey = uu + vu;
                     } else {
-                        uniqueKey = source + videoId;
+                        uniqueKey = videoEngineType + videoId;
                     }
-                    String nativeUrl = mVideo.getNativeSrc();
+                    String nativeUrl = mVideo.getNativeUrl();
                     File file = new File(nativeUrl);
                     if (file.exists()) {
                         file.delete();

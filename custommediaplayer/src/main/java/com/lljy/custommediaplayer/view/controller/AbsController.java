@@ -673,13 +673,13 @@ public abstract class AbsController<T extends ControllerListener> extends Relati
      */
     protected void onPlayNewHandle(Bundle params) {
         if (params != null) {
-            dismissBottomProgress();
-            dismissPlayOrPauseIv();
-            dismissErrorLayout();
             String coverUrl = params.getString(VideoStatus.Constants.PLAY_COVER_URL);
             setCover(coverUrl);
-            showCover();
         }
+        dismissBottomProgress();
+        dismissPlayOrPauseIv();
+        dismissErrorLayout();
+        showCover();
         startLoading();
     }
 

@@ -87,14 +87,14 @@ public class TencentVideoPlayer extends AbsVideoPlayer implements ITXVodPlayList
             mLivePlayer.setRenderMode(TXLiveConstants.RENDER_MODE_ADJUST_RESOLUTION);
             //是否自动播放，设置不自动不放
             mLivePlayer.setAutoPlay(true);
-            if (mVideo == null || mVideo.getInfo() == null || (TextUtils.isEmpty(mVideo.getSrc()) && TextUtils.isEmpty(mVideo.getNativeSrc()))) {
+            if (mVideo == null || (TextUtils.isEmpty(mVideo.getNetUrl()) && TextUtils.isEmpty(mVideo.getNativeUrl()))) {
                 if (mListener != null) {
                     mListener.onError("播放出错，或者没有视频资源");
                 }
                 return;
             }
-            Log.d(TAG, "腾讯视频播放器播放视频本地地址？：" + mVideo.getNativeSrc() + "\n网络地址：" + mVideo.getSrc());
-            int result = mLivePlayer.startPlay(TextUtils.isEmpty(mVideo.getNativeSrc()) ? mVideo.getSrc() : mVideo.getNativeSrc());
+            Log.d(TAG, "腾讯视频播放器播放视频本地地址？：" + mVideo.getNativeUrl() + "\n网络地址：" + mVideo.getNetUrl());
+            int result = mLivePlayer.startPlay(TextUtils.isEmpty(mVideo.getNativeUrl()) ? mVideo.getNetUrl() : mVideo.getNativeUrl());
             if (result != 0) {
                 Log.d(TAG, "播放出错，或者没有视频资源");
                 if (mListener != null) {

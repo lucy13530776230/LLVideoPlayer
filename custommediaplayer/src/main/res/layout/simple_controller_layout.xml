@@ -5,22 +5,13 @@
 
     <include layout="@layout/video_bottom_progress_layout" />
 
-    <RelativeLayout
-        android:id="@+id/play_or_pause_rl"
+    <ImageView
+        android:id="@+id/cover_iv"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:clickable="true"
-        android:focusable="true"
-        android:focusableInTouchMode="true">
-
-        <ImageView
-            android:id="@+id/cover_iv"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_centerInParent="true"
-            android:scaleType="fitXY"
-            android:visibility="gone" />
-    </RelativeLayout>
+        android:layout_centerInParent="true"
+        android:scaleType="centerCrop"
+        android:visibility="gone" />
 
     <include layout="@layout/video_loading_layout" />
 
