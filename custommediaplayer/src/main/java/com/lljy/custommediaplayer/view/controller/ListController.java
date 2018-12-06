@@ -492,6 +492,41 @@ public class ListController extends AbsController<ListControllerListener> {
         playModeIv.setImageResource(resourceId);
     }
 
+
+    /**
+     * 从头开始按顺序播放视频
+     */
+    public void playVideoInOrderAndPlayFirstVideo() {
+        PlayModeUtils.setPlayMode(PlayMode.PLAY_MODE_LIST_ORDER);
+        setPlayModelImage();
+        if (mAdapter != null && mAdapter.getData().size() > 0 && mListener != null) {
+            mAdapter.setPlay(0);
+            mListener.onVideoSelected(mAdapter.getData().get(0));
+        }
+    }
+
+    /**
+     * 根据视频id播放指定视频
+     *
+     * @param id
+     */
+    public void playVideoByVideoId(String id) {
+        if (!TextUtils.isEmpty(id) && mAdapter != null && mAdapter.getData().size() > 0 && mListener != null) {
+            VideoEntity playEntity = null;
+            for (int i = 0; i < mAdapter.getData().size(); i++) {
+                VideoEntity entity = mAdapter.getData().get(i);
+                if (entity != null && id.equals(entity.getId())) {
+                    playEntity = entity;
+                    mAdapter.setPlay(i);
+                    break;
+                }
+            }
+            if (playEntity != null) {
+                mListener.onVideoSelected(playEntity);
+            }
+        }
+    }
+
     /**
      * 打开或者退出全屏
      */

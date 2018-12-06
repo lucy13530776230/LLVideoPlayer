@@ -364,6 +364,21 @@ public abstract class AbsCustomVideoPlayer<T extends AbsController> extends Rela
     }
 
     /**
+     * 点击了返回
+     *
+     * @return 如果退出全屏则返回false, 返回true表示可以退出
+     */
+    public boolean onBackPressed() {
+        if (mController != null && mListener != null && mController.getScreenStatus() == ScreenStatus.SCREEN_STATUS_FULL) {
+            //先退出全屏
+            mListener.onExitFullScreen();
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    /**
      * 当前屏幕状态
      *
      * @return 返回NONE说明出问题了

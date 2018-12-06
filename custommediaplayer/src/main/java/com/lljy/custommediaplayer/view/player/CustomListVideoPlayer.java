@@ -100,6 +100,26 @@ public class CustomListVideoPlayer extends AbsCustomVideoPlayer<ListController> 
     }
 
     /**
+     * 从头开始按顺序播放视频
+     */
+    public void playVideoInOrderAndPlayFirstVideo() {
+        if (mController != null) {
+            mController.playVideoInOrderAndPlayFirstVideo();
+        }
+    }
+
+    /**
+     * 根据视频id播放指定视频
+     *
+     * @param id
+     */
+    public void playVideoByVideoId(String id) {
+        if (mController != null) {
+            mController.playVideoByVideoId(id);
+        }
+    }
+
+    /**
      * 删除了指定视频
      *
      * @param videoEntity 删除的视频
