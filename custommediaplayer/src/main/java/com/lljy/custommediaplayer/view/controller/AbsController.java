@@ -199,6 +199,18 @@ public abstract class AbsController<T extends ControllerListener> extends Relati
         }
     }
 
+    public void setNeedTouchControlProgress(boolean needTouchControlProgress) {
+        if (mControllerSimpleGestureListener != null) {
+            mControllerSimpleGestureListener.setNeedTouchControlProgress(needTouchControlProgress);
+        }
+    }
+
+    public void setNeedTouchControlVol(boolean needTouchControlVol) {
+        if (mControllerSimpleGestureListener != null) {
+            mControllerSimpleGestureListener.setNeedTouchControlVol(needTouchControlVol);
+        }
+    }
+
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
         int action = ev.getAction();

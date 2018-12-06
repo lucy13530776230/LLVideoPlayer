@@ -36,7 +36,6 @@ public class MainActivity extends AppCompatActivity {
         mVideoView = findViewById(R.id.video_view);
         mVideoView.setController(new ListController(this));
         List<VideoBean> videos = new ArrayList<>();
-        VideoDownloadManager.getInstance().setDownloadSavePath(Environment.getExternalStorageDirectory().getPath() + "/xgwvideo/");
 
         VideoBean video1 = new VideoBean();
         video1.setPlaying(true);
@@ -81,10 +80,6 @@ public class MainActivity extends AppCompatActivity {
         videoNames[2] = "乐视sdk下载载视频2";
 
         mVideoView.setVideos(videos);
-
-        findViewById(R.id.select_btn).setOnClickListener(v -> new AlertDialog.Builder(MainActivity.this)
-                .setTitle("选择要下载的视频")
-                .setItems(videoNames, (dialog, which) -> VideoDownloadManager.getInstance().addDownloadVideo(videos.get(which))).show());
     }
 
     @Override
@@ -102,6 +97,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        VideoDownloadManager.getInstance().cancelAllDownloads();
+        VideoManager.getInstance().cancelAllDownloads();
     }
 }

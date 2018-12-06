@@ -4,6 +4,7 @@ import android.app.ActivityManager;
 import android.app.Application;
 import android.content.Context;
 import android.content.pm.PackageInfo;
+import android.support.annotation.IntRange;
 import android.util.Log;
 
 import com.lecloud.sdk.api.stats.IAppStats;
@@ -37,10 +38,21 @@ public class VideoManager {
         return instance;
     }
 
-    public void initApp(Application app) {
+    public VideoManager initApp(Application app) {
         this.app = app;
         initLePlayer(app);
         VideoDownloadManager.getInstance().checkExpireVideos();
+        return this;
+    }
+
+    public VideoManager setVideoSavedPath(String path) {
+        VideoDownloadManager.getInstance().setDownloadSavePath(path);
+        return this;
+    }
+
+    public VideoManager setVideoExpireDays(@IntRange(from = 1, to = 30) int days) {
+        VideoDownloadManager.getInstance().setExpireDays(days);
+        return this;
     }
 
     /**
@@ -136,5 +148,13 @@ public class VideoManager {
 
     public Application getApp() {
         return app;
+    }
+
+    public void cancelAllDownloads() {
+        VideoDownloadManager.getInstance().cancelAllDownloads();
+    }
+
+    public void clearAllVideoCache() {
+        VideoDownloadManager.getInstance().clearAllVideoCache();
     }
 }

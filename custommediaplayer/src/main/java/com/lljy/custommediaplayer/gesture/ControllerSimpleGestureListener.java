@@ -25,8 +25,20 @@ public class ControllerSimpleGestureListener extends GestureDetector.SimpleOnGes
     private boolean hasFF_REW = false;
     private View gestureLayout;
 
+
+    private boolean needTouchControlVol;//手势滑动是否可控制音量
+    private boolean needTouchControlProgress;//手势滑动是否可控制进度
+
     public ControllerSimpleGestureListener(View gestureLayout) {
         this.gestureLayout = gestureLayout;
+    }
+
+    public void setNeedTouchControlProgress(boolean needTouchControlProgress) {
+        this.needTouchControlProgress = needTouchControlProgress;
+    }
+
+    public void setNeedTouchControlVol(boolean needTouchControlVol) {
+        this.needTouchControlVol = needTouchControlVol;
     }
 
     @Override
@@ -50,9 +62,9 @@ public class ControllerSimpleGestureListener extends GestureDetector.SimpleOnGes
             case NONE:
                 Log.d(TAG, "NONE: ");
                 //offset是让快进快退不要那么敏感的值
-                if (Math.abs(distanceX) - Math.abs(distanceY) > offsetX) {
+                if (Math.abs(distanceX) - Math.abs(distanceY) > offsetX && needTouchControlProgress) {
                     mScrollMode = ScrollMode.FF_REW;
-                } else {
+                } else if (needTouchControlVol) {
 //                    if (e1.getX() < width / 2) {
 //                        mScrollMode = ScrollMode.BRIGHTNESS;
 //                    } else {

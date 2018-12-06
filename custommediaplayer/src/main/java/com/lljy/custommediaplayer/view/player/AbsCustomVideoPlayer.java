@@ -1,6 +1,7 @@
 package com.lljy.custommediaplayer.view.player;
 
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -9,6 +10,7 @@ import android.util.Log;
 import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 
+import com.lljy.custommediaplayer.R;
 import com.lljy.custommediaplayer.constants.ScreenStatus;
 import com.lljy.custommediaplayer.constants.VideoStatus;
 import com.lljy.custommediaplayer.download.VideoDownloadManager;
@@ -48,17 +50,20 @@ import java.io.File;
  */
 
 public abstract class AbsCustomVideoPlayer<T extends AbsController> extends RelativeLayout implements IVideoPlayListener {
-    private static final String TAG = "AbsCustomVideoPlayer";
+    protected static final String TAG = "AbsCustomVideoPlayer";
     private AbsVideoPlayer mPlayer;
-    private Context mContext;
+    protected Context mContext;
     protected T mController;
 
     protected VideoBean mVideo;
-    private boolean isFirstEnter;//是否是第一次进入
+    protected boolean isFirstEnter;//是否是第一次进入
 
-    private int currentProgress;//当前播放进度
+    protected int currentProgress;//当前播放进度
 
-    private IVideoListener mListener;
+    protected IVideoListener mListener;
+
+    protected boolean needTouchControlVol;
+    protected boolean needTouchControlProgress;
 
     public AbsCustomVideoPlayer(Context context) {
         this(context, null);
@@ -70,7 +75,7 @@ public abstract class AbsCustomVideoPlayer<T extends AbsController> extends Rela
 
     public AbsCustomVideoPlayer(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        init(context);
+        init(context, attrs);
     }
 
     /**
@@ -90,6 +95,10 @@ public abstract class AbsCustomVideoPlayer<T extends AbsController> extends Rela
     public void setController(T controller) {
         this.mController = controller;
         addView(mController);
+        if (mController != null) {
+            mController.setNeedTouchControlProgress(needTouchControlProgress);
+            mController.setNeedTouchControlVol(needTouchControlVol);
+        }
         setControllerListener(controller);
     }
 
@@ -105,7 +114,11 @@ public abstract class AbsCustomVideoPlayer<T extends AbsController> extends Rela
      *
      * @param context
      */
-    private void init(Context context) {
+    private void init(Context context, AttributeSet attrs) {
+        TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.AbsCustomVideoPlayer);
+        needTouchControlProgress = typedArray.getBoolean(R.styleable.AbsCustomVideoPlayer_needTouchControlProgress, true);
+        needTouchControlVol = typedArray.getBoolean(R.styleable.AbsCustomVideoPlayer_needTouchControlVol, true);
+        typedArray.recycle();
         currentProgress = 0;
         setBackgroundColor(Color.BLACK);
         mContext = context;

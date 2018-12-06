@@ -1,13 +1,10 @@
 package com.lljy.custommediaplayer.download;
 
-import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Log;
-import android.util.SizeF;
 
 import com.lecloud.sdk.download.control.DownloadCenter;
 import com.lecloud.sdk.download.control.LeDownloadManager;
@@ -22,6 +19,7 @@ import com.liulishuo.okdownload.core.listener.DownloadListener4WithSpeed;
 import com.liulishuo.okdownload.core.listener.assist.Listener4SpeedAssistExtend;
 import com.lljy.custommediaplayer.constants.VideoSpKey;
 import com.lljy.custommediaplayer.entity.VideoBean;
+import com.lljy.custommediaplayer.utils.FileUtils;
 import com.lljy.custommediaplayer.utils.SPUtils;
 import com.lljy.custommediaplayer.utils.VideoManager;
 
@@ -34,7 +32,6 @@ import java.util.Map;
 public class VideoDownloadManager {
     private static final String TAG = "VideoDownloadManager";
     private static VideoDownloadManager instance;
-    private VideoDownloadListener mListener;
     private String downloadPath = Environment.getDownloadCacheDirectory().getPath() + File.separator + "langlangvideo" + File.separator;
 
     private int expireDays = 30;//视频过期时间默认三十天
@@ -225,15 +222,6 @@ public class VideoDownloadManager {
     }
 
     /**
-     * 设置回调监听
-     *
-     * @param listener
-     */
-    public void setListener(VideoDownloadListener listener) {
-        this.mListener = listener;
-    }
-
-    /**
      * 视频过期时间
      *
      * @param days 过期时间
@@ -360,10 +348,14 @@ public class VideoDownloadManager {
      * @return true则存在
      */
     public boolean isVideoExits(String uniqueKey) {
-        String nativeUrl = getNativeUrl(uniqueKey);
-        if (!TextUtils.isEmpty(nativeUrl) && !"0".equals(nativeUrl) && !"1".equals(nativeUrl)) {
-            File file = new File(nativeUrl);
-            return file.exists();
+        try {
+            String nativeUrl = getNativeUrl(uniqueKey);
+            if (!TextUtils.isEmpty(nativeUrl) && !"0".equals(nativeUrl) && !"1".equals(nativeUrl)) {
+                File file = new File(nativeUrl);
+                return file.exists();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         return false;
     }
@@ -381,37 +373,41 @@ public class VideoDownloadManager {
      * 取消所有下载
      */
     public void cancelAllDownloads() {
-        if (okTasks != null) {
-            for (int i = 0; i < okTasks.size(); i++) {
-                DownloadTask task = okTasks.get(i);
-                if (task != null) {
-                    String uniqueKey = (String) task.getTag();
-                    String nativeUrl = getNativeUrl(uniqueKey);
-                    task.cancel();
-                    if ("0".equals(nativeUrl) || "1".equals(nativeUrl)) {
-                        File file = task.getFile();
-                        if (file != null && file.exists()) {
-                            file.delete();
+        try {
+            if (okTasks != null) {
+                for (int i = 0; i < okTasks.size(); i++) {
+                    DownloadTask task = okTasks.get(i);
+                    if (task != null) {
+                        String uniqueKey = (String) task.getTag();
+                        String nativeUrl = getNativeUrl(uniqueKey);
+                        task.cancel();
+                        if ("0".equals(nativeUrl) || "1".equals(nativeUrl)) {
+                            File file = task.getFile();
+                            if (file != null && file.exists()) {
+                                file.delete();
+                            }
+                            removeDownloadRecord(uniqueKey);
                         }
-                        removeDownloadRecord(uniqueKey);
                     }
                 }
             }
-        }
-        if (leTasks != null) {
-            for (int i = 0; i < leTasks.size(); i++) {
-                LeDownloadInfo info = leTasks.get(i);
-                if (info != null) {
-                    String uniqueKey = info.getUu() + info.getVu();
-                    String nativeUrl = getNativeUrl(uniqueKey);
-                    if ("0".equals(nativeUrl) || "1".equals(nativeUrl)) {
-                        DownloadCenter.getInstances(VideoManager.getInstance().getApp()).cancelDownload(info, true);
-                        removeDownloadRecord(uniqueKey);
-                    } else {
-                        DownloadCenter.getInstances(VideoManager.getInstance().getApp()).cancelDownload(info, false);
+            if (leTasks != null) {
+                for (int i = 0; i < leTasks.size(); i++) {
+                    LeDownloadInfo info = leTasks.get(i);
+                    if (info != null) {
+                        String uniqueKey = info.getUu() + info.getVu();
+                        String nativeUrl = getNativeUrl(uniqueKey);
+                        if ("0".equals(nativeUrl) || "1".equals(nativeUrl)) {
+                            DownloadCenter.getInstances(VideoManager.getInstance().getApp()).cancelDownload(info, true);
+                            removeDownloadRecord(uniqueKey);
+                        } else {
+                            DownloadCenter.getInstances(VideoManager.getInstance().getApp()).cancelDownload(info, false);
+                        }
                     }
                 }
             }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -423,7 +419,7 @@ public class VideoDownloadManager {
             Log.d(TAG, "检测视频是否过期");
             //检测下载的视频是否需要删除（定期清理视频）
             Map<String, String> videosMap = (Map<String, String>) SPUtils.getInstance(VideoSpKey.VIDEO_DOWNLOAD_SP_NAME).getAll();
-            //删除过期视屏
+            //有保存记录的视频删除先
             if (videosMap != null && videosMap.size() > 0) {
                 long now = System.currentTimeMillis();
                 for (String key : videosMap.keySet()) {
@@ -442,6 +438,86 @@ public class VideoDownloadManager {
                     } else {
                         removeDownloadRecord(key);
                     }
+                }
+            }
+            //没保存记录的但出于指定下载目录下的视频
+            //检测下载的视频是否需要删除（定期清理视频）
+            //父目录不能存在则创建下载目录
+            File parentFile = new File(downloadPath);
+            if (!parentFile.exists()) {//文件不存在，创建文件，同时计时，到下次删除判断计时
+                parentFile.mkdirs();
+            }
+            long now = System.currentTimeMillis();
+            List<File> files = FileUtils.listFilesInDir(parentFile);
+            if (files != null) {
+                for (int i = 0; i < files.size(); i++) {
+                    File file = files.get(i);
+                    if (file != null && file.exists()) {
+                        long time = file.lastModified();
+                        long createTimeMillis = Math.abs(now - time);
+                        long createDays = createTimeMillis / (24 * 3600 * 1000);
+                        if (createDays >= expireDays) {
+                            FileUtils.deleteFile(file);
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * 清除所有视频缓存
+     */
+    public void clearAllVideoCache() {
+        try {
+            Map<String, String> videosMap = (Map<String, String>) SPUtils.getInstance(VideoSpKey.VIDEO_DOWNLOAD_SP_NAME).getAll();
+            //有保存记录的视频删除先
+            if (videosMap != null && videosMap.size() > 0) {
+                for (String key : videosMap.keySet()) {
+                    String value = videosMap.get(key);
+                    Log.d(TAG, "检测下载的视频url地址：" + value);
+                    File file = new File(value);
+                    if (file.exists()) {
+                        Log.d(TAG, "视频过期，删除");
+                        file.delete();
+                        removeDownloadRecord(key);
+                    } else {
+                        removeDownloadRecord(key);
+                    }
+                }
+            }
+            deleteFileAllFilesAndDirectories(new File(downloadPath));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * 递归删除文件和文件夹
+     *
+     * @param file 要删除的根目录
+     */
+    private static void deleteFileAllFilesAndDirectories(File file) {
+        try {
+            if (!file.exists()) {
+                return;
+            } else {
+                if (file.isFile()) {
+                    file.delete();
+                    return;
+                }
+                if (file.isDirectory()) {
+                    File[] childFile = file.listFiles();
+                    if (childFile == null || childFile.length == 0) {
+                        file.delete();
+                        return;
+                    }
+                    for (File f : childFile) {
+                        deleteFileAllFilesAndDirectories(f);
+                    }
+                    file.delete();
                 }
             }
         } catch (Exception e) {
