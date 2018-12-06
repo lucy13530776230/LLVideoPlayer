@@ -1,4 +1,4 @@
-## 自定义视频播放器
+自定义视频播放器
 
 整合了乐视视频播放器（播放乐视sdk）、腾讯视频播放器（播放url）两种，支持播放视频格式：3gp,mp4,flv,m3u8，可自定义皮肤，可添加到android项目，自带离线缓存功能。
 
@@ -138,7 +138,7 @@ public class AppConfig extends Application {
 
 图示：
 
-![](http://git.cke123.com/XieGuangwei/CustomVideoPlayer/netUrl/master/screenshot/list_cap.png)
+![](http://git.cke123.com/XieGuangwei/CustomVideoPlayer/raw/master/screenshot/list_cap.png)
 
 xml
 
@@ -162,63 +162,107 @@ java
 ```java
 mVideoView = findViewById(R.id.video_view);//初始化视频播放器
 mVideoView.setController(new ListController(this));//设置皮肤为列表
-//开始设置资源
-List<VideoBean> videos = new ArrayList<>();
-
-VideoBean video1 = new VideoBean();
+VideoEntity video1 = new VideoEntity();
 video1.setPlaying(true);
-video1.setSrc("http://tanzi27niu.cdsb.mobi/wps/wp-content/uploads/2017/05/2017-05-17_17-33-30.mp4");
-video1.setVideo_id("1");
-VideoInfo info = new VideoInfo();
-info.setThumbnails("http://tanzi27niu.cdsb.mobi/wps/wp-content/uploads/2017/05/2017-05-17_17-30-43.jpg");
-video1.setVideoName("视频1");
-video1.setInfo(info);
-video1.setSource("qiniu");
+video1.setNetUrl("http://tanzi27niu.cdsb.mobi/wps/wp-content/uploads/2017/05/2017-05-17_17-33-30.mp4");
+video1.setId("1");
+video1.setCoverUrl("http://tanzi27niu.cdsb.mobi/wps/wp-content/uploads/2017/05/2017-05-17_17-30-43.jpg");
+video1.setVideoName("办公室小野开番外了，居然在办公室开澡堂！老板还点赞？");
 videos.add(video1);
 
-VideoBean video2 = new VideoBean();
+
+VideoEntity video2 = new VideoEntity();
 video2.setPlaying(false);
-video2.setSrc("http://tanzi27niu.cdsb.mobi/wps/wp-content/uploads/2017/05/2017-05-10_10-20-26.mp4");
-video2.setVideo_id("2");
-VideoInfo info2 = new VideoInfo();
-info2.setThumbnails("http://tanzi27niu.cdsb.mobi/wps/wp-content/uploads/2017/05/2017-05-10_10-09-58.jpg");
-video2.setVideoName("视频2");
-video2.setSource("qiniu");
-video2.setInfo(info2);
+video2.setNetUrl("http://tanzi27niu.cdsb.mobi/wps/wp-content/uploads/2017/05/2017-05-10_10-20-26.mp4");
+video2.setId("2");
+video2.setCoverUrl("http://tanzi27niu.cdsb.mobi/wps/wp-content/uploads/2017/05/2017-05-10_10-09-58.jpg");
+video2.setVideoName("小野在办公室用丝袜做茶叶蛋 边上班边看《外科风云》");
 videos.add(video2);
 
-VideoBean video3 = new VideoBean();
+
+VideoEntity video3 = new VideoEntity();
 video3.setPlaying(false);
-video3.setVideo_id("3");
-VideoInfo info3 = new VideoInfo();
-info3.setUu("nothf5qvkj");
-info3.setVu("9f1a891f09");
-info3.setThumbnails("http://tanzi27niu.cdsb.mobi/wps/wp-content/uploads/2017/05/2017-05-10_10-09-58.jpg");
-video3.setVideoName("视频3");
-video3.setSource("letv");
-video3.setInfo(info3);
+video3.setId("3");
+video3.setUu("nothf5qvkj");
+video3.setVu("9f1a891f09");
+video3.setVideoEngineType(VideoEngineType.TYPE_LETV);
+video3.setCoverUrl("http://tanzi27niu.cdsb.mobi/wps/wp-content/uploads/2017/05/2017-05-10_10-09-58.jpg");
+video3.setVideoName("Linux系统讲解");
+video3.setVideoEngineType(VideoEngineType.TYPE_LETV);
 videos.add(video3);
 
-//注意：info、id、videoEngineType、一定要设置，否则不能播放和缓存
+//注意：info、video_id、source、一定要设置，否则不能播放和缓存
 //回调，记录全屏，全屏需手动设置撑开布局
-mVideoView.setListener(new IVideoListener() {
-            @Override
-            public void onStartFullScreen() {
-                //在这里设置撑开布局
-            }
-
-            @Override
-            public void onExitFullScreen() {
-				//在这里恢复布局
-            }
-        });
 ```
 
 **（2）单个视频**
 
+图示：
+
+![](http://git.cke123.com/XieGuangwei/CustomVideoPlayer/raw/master/screenshot/single_cap.png)
+
+xml
+
+```xml
+<com.lljy.custommediaplayer.view.player.SimpleVideoPlayer
+        android:id="@+id/video_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:needTouchControlProgress="true"
+        app:needTouchControlVol="true"></com.lljy.custommediaplayer.view.player.SimpleVideoPlayer>
+```
+
+```java
+参数说明：
+needTouchControlProgress="true"//是否可手势滑动控制进度
+needTouchControlVol="true"//是否可手势滑动控制音量
+```
+
+java
+
+```java
+VideoEntity video3 = new VideoEntity();
+video3.setPlaying(false);
+video3.setId("3");
+video3.setUu("nothf5qvkj");
+video3.setVu("9f1a891f09");
+video3.setVideoEngineType(VideoEngineType.TYPE_LETV);
+video3.setCoverUrl("http://tanzi27niu.cdsb.mobi/wps/wp-content/uploads/2017/05/2017-05-10_10-09-58.jpg");
+video3.setVideoName("Linux系统讲解");
+video3.setVideoEngineType(VideoEngineType.TYPE_LETV);
+videos.add(video3);
+mVideoView.setVideo(video2);
+```
+
+**(3)回调监听**
+
+```java
+mVideoView.setListener(new IVideoListener() {
+            @Override
+            public void onStartFullScreen() {
+
+            }
+
+            @Override
+            public void onExitFullScreen() {
+
+            }
+
+            @Override
+            public void onError(String msg) {
+
+            }
+
+            @Override
+            public void onComplete() {
+
+            }
+        });
+```
 
 
-**(3)生命周期**
+
+**(4)生命周期**
 
 ```java
 @Override
@@ -240,6 +284,6 @@ protected void onDestroy() {
 }
 ```
 
-##### 6.离线缓存
+##### 6.引擎选择机制
 
-​	全自动离线缓存，不用处理，本地没有播网络，本地有播本地。
+​	设置的VideoEngineType来选择播放引擎和下载引擎，默认会设置引擎类型为VideoEngineType.TYPE_TENCENT，如需使用乐视播放器引擎播放和下载，需设置引擎类型为videoEntity.setVideoEngineType(VideoEngineType.TYPE_LETV)，播放器会根据设置的类型选择播放和下载类型。
