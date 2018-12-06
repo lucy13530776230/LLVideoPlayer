@@ -4,7 +4,7 @@
 
 ### 使用说明
 
-1.添加权限
+##### 1.添加权限
 
 ```xml
 <uses-permission android:name="android.permission.INTERNET" />
@@ -21,7 +21,7 @@
 <uses-permission android:name="android.permission.RECEIVE_USER_PRESENT"/>
 ```
 
-2.添加乐视Service
+##### 2.添加乐视Service
 
 ```xml
 <service
@@ -29,7 +29,7 @@
          android:process=":cmf" />
 ```
 
-3.初始化信息（最好在Application.java的onCreate()方法初始化
+##### 3.初始化信息（最好在Application.java的onCreate()方法初始化
 
 ```java
 public class AppConfig extends Application {
@@ -46,7 +46,7 @@ public class AppConfig extends Application {
 
 
 
-4.layout里面添加播放器
+##### 4.layout里面添加播放器
 
 ```xml
 <com.lljy.custommediaplayer.view.player.CustomListVideoPlayer
@@ -60,9 +60,11 @@ public class AppConfig extends Application {
     参数说明：
     	app:needTouchControlProgress="true"//是否可手势滑动控制进度
         app:needTouchControlVol="true"//是否可手势滑动控制音量
-5.设置播放资源
+##### 5.播放
 
-(1)列表
+​	播放时，只要设置好资源，自动选择播放本地视频还是网络视频，会自动选择用那个播放引擎播放本地视频还是网络视频。
+
+**(1)列表设置资源**
 
 ```java
 mVideoView = findViewById(R.id.video_view);//初始化视频播放器
@@ -105,6 +107,46 @@ video3.setInfo(info3);
 videos.add(video3);
 
 //注意：info、video_id、source、一定要设置，否则不能播放和缓存
+//回调，记录全屏，全屏需手动设置撑开布局
+mVideoView.setListener(new IVideoListener() {
+            @Override
+            public void onStartFullScreen() {
+                //在这里设置撑开布局
+            }
+
+            @Override
+            public void onExitFullScreen() {
+				//在这里恢复布局
+            }
+        });
 ```
 
+**（2）.单个视频**
 
+
+
+**(3).生命周期**
+
+```java
+@Override
+protected void onPause() {
+    super.onPause();
+    mVideoView.onPause();//释放播放器资源
+}
+
+@Override
+protected void onResume() {
+    super.onResume();
+    mVideoView.onResume();//恢复播放
+}
+
+@Override
+protected void onDestroy() {
+    super.onDestroy();
+    VideoManager.getInstance().cancelAllDownloads();//取消所有下载任务（这个在退出app调用即可，不用每个activity或者fragment都添加）
+}
+```
+
+##### 4.离线缓存
+
+​	全自动离线缓存，不用处理，本地没有播网络，本地有播本地。

@@ -56,18 +56,6 @@ public class CustomListVideoPlayer extends AbsCustomVideoPlayer<ListController> 
     }
 
     /**
-     * 播放指定视频（供外界调用，调用时要更新正在播放的视频）
-     *
-     * @param videoBean 指定视频
-     */
-    public void playVideo(VideoBean videoBean) {
-        if (mController != null) {
-
-        }
-        super.setVideoSource(videoBean);
-    }
-
-    /**
      * 视频重新排序
      *
      * @param videos 待排序的视频列表

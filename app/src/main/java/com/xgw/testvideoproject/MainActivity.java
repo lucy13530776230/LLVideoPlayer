@@ -8,6 +8,7 @@ import android.os.Bundle;
 import com.lljy.custommediaplayer.download.VideoDownloadManager;
 import com.lljy.custommediaplayer.entity.VideoBean;
 import com.lljy.custommediaplayer.entity.VideoInfo;
+import com.lljy.custommediaplayer.interfs.IVideoListener;
 import com.lljy.custommediaplayer.utils.VideoManager;
 import com.lljy.custommediaplayer.view.player.CustomListVideoPlayer;
 import com.lljy.custommediaplayer.view.controller.ListController;
@@ -80,6 +81,17 @@ public class MainActivity extends AppCompatActivity {
         videoNames[2] = "乐视sdk下载载视频2";
 
         mVideoView.setVideos(videos);
+        mVideoView.setListener(new IVideoListener() {
+            @Override
+            public void onStartFullScreen() {
+
+            }
+
+            @Override
+            public void onExitFullScreen() {
+
+            }
+        });
     }
 
     @Override

@@ -13,10 +13,4 @@
         app:needTouchControlProgress="true"
         app:needTouchControlVol="true"></com.lljy.custommediaplayer.view.player.CustomListVideoPlayer>
 
-    <Button
-        android:id="@+id/select_btn"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="点我选择视频下载" />
-
 </android.support.constraint.ConstraintLayout>
