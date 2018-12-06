@@ -190,6 +190,7 @@ video3.setCoverUrl("http://tanzi27niu.cdsb.mobi/wps/wp-content/uploads/2017/05/2
 video3.setVideoName("Linux系统讲解");
 video3.setVideoEngineType(VideoEngineType.TYPE_LETV);
 videos.add(video3);
+mVideoView.setVideos(videos);//设置播放资源，并播放
 
 //注意：info、video_id、source、一定要设置，否则不能播放和缓存
 //回调，记录全屏，全屏需手动设置撑开布局
@@ -221,6 +222,8 @@ needTouchControlVol="true"//是否可手势滑动控制音量
 java
 
 ```java
+mVideoView = findViewById(R.id.video_view);//初始化视频播放器
+mVideoView.setController(new ListController(this));//设置皮肤为简单皮肤
 VideoEntity video3 = new VideoEntity();
 video3.setPlaying(false);
 video3.setId("3");
@@ -231,7 +234,7 @@ video3.setCoverUrl("http://tanzi27niu.cdsb.mobi/wps/wp-content/uploads/2017/05/2
 video3.setVideoName("Linux系统讲解");
 video3.setVideoEngineType(VideoEngineType.TYPE_LETV);
 videos.add(video3);
-mVideoView.setVideo(video2);
+mVideoView.setVideo(video2);//设置播放资源，并播放
 ```
 
 **(3)回调监听**
