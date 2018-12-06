@@ -11,6 +11,9 @@ public class AppConfig extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-        VideoManager.getInstance().initApp(this).setVideoExpireDays(1).setVideoSavedPath(Environment.getExternalStorageDirectory().getPath() + File.separator + "llplayer" + File.separator);
+        VideoManager.getInstance()
+                .initApp(this)
+                .setVideoExpireDays(1)
+                .setVideoSavedPath(Environment.getExternalStorageDirectory().getPath() + File.separator + "llplayer" + File.separator);
     }
 }
