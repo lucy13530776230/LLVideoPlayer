@@ -9,8 +9,12 @@ import android.view.ViewGroup;
 
 import com.tencent.rtmp.ITXVodPlayListener;
 import com.tencent.rtmp.TXLiveConstants;
+import com.tencent.rtmp.TXVodPlayConfig;
 import com.tencent.rtmp.TXVodPlayer;
 import com.tencent.rtmp.ui.TXCloudVideoView;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @desc: 腾讯视频播放器：https://cloud.tencent.com/document/product/881/20216#step-3.3A-.E5.90.AF.E5.8A.A8.E6.92.AD.E6.94.BE
@@ -29,6 +33,7 @@ import com.tencent.rtmp.ui.TXCloudVideoView;
 public class TencentVideoPlayer extends AbsVideoPlayer implements ITXVodPlayListener {
     private TXVodPlayer mLivePlayer;
     private TXCloudVideoView mPlayerView;
+    private TXVodPlayConfig mConfig;
 
     public TencentVideoPlayer(Context context) {
         super(context, null);
@@ -68,9 +73,16 @@ public class TencentVideoPlayer extends AbsVideoPlayer implements ITXVodPlayList
     protected void initPlayer() {
         try {
             release();
+            if (mVideo == null || (TextUtils.isEmpty(mVideo.getNativeUrl()) && TextUtils.isEmpty(mVideo.getNetUrl()))) {
+                if (mListener != null) {
+                    mListener.onError("无可用播放地址");
+                }
+                return;
+            }
             //初始化腾讯视频播放器
             mLivePlayer = new TXVodPlayer(mContext);
             mPlayerView = new TXCloudVideoView(mContext);
+            mConfig = new TXVodPlayConfig();
             mPlayerView.showLog(false);
             //添加播放器
             LayoutParams params = new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
@@ -82,19 +94,25 @@ public class TencentVideoPlayer extends AbsVideoPlayer implements ITXVodPlayList
             // 硬件加速在1080p解码场景下效果显著，但细节之处并不如想象的那么美好：
             // (1) 只有 4.3 以上android系统才支持
             // (2) 兼容性我们目前还仅过了小米华为等常见机型，故这里的返回值您先不要太当真
-            mLivePlayer.enableHardwareDecode(false);
+            mLivePlayer.enableHardwareDecode(true);
             mLivePlayer.setRenderRotation(TXLiveConstants.RENDER_ROTATION_PORTRAIT);
             mLivePlayer.setRenderMode(TXLiveConstants.RENDER_MODE_ADJUST_RESOLUTION);
+            //设置参数
+            mConfig.setCacheFolderPath(null);
+            Map<String, String> header = new HashMap<>();
+            mConfig.setHeaders(header);
+            mLivePlayer.setConfig(mConfig);
             //是否自动播放，设置不自动不放
             mLivePlayer.setAutoPlay(true);
-            if (mVideo == null || (TextUtils.isEmpty(mVideo.getNetUrl()) && TextUtils.isEmpty(mVideo.getNativeUrl()))) {
-                if (mListener != null) {
-                    mListener.onError("播放出错，或者没有视频资源");
-                }
-                return;
+            String url;
+            if (TextUtils.isEmpty(mVideo.getNativeUrl())) {
+                url = mVideo.getNetUrl();
+                Log.d(TAG, "腾讯引擎播网络url：" + url);
+            } else {
+                url = mVideo.getNativeUrl();
+                Log.d(TAG, "腾讯引擎播本地url：" + url);
             }
-            Log.d(TAG, "腾讯视频播放器播放视频本地地址？：" + mVideo.getNativeUrl() + "\n网络地址：" + mVideo.getNetUrl());
-            int result = mLivePlayer.startPlay(TextUtils.isEmpty(mVideo.getNativeUrl()) ? mVideo.getNetUrl() : mVideo.getNativeUrl());
+            int result = mLivePlayer.startPlay(url);
             if (result != 0) {
                 Log.d(TAG, "播放出错，或者没有视频资源");
                 if (mListener != null) {
@@ -124,6 +142,10 @@ public class TencentVideoPlayer extends AbsVideoPlayer implements ITXVodPlayList
                 mPlayerView.onDestroy();
                 removeView(mPlayerView);
                 mPlayerView = null;
+            }
+
+            if (mConfig != null) {
+                mConfig = null;
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -172,11 +194,11 @@ public class TencentVideoPlayer extends AbsVideoPlayer implements ITXVodPlayList
         } else if (event == TXLiveConstants.PLAY_EVT_PLAY_PROGRESS) {
             //视频实时进度回调
             int progress = param.getInt(TXLiveConstants.EVT_PLAY_PROGRESS_MS);
-            int playable = param.getInt(TXLiveConstants.EVT_PLAYABLE_DURATION_MS);
+//            int playable = param.getInt(TXLiveConstants.EVT_PLAYABLE_DURATION_MS);
             int duration = param.getInt(TXLiveConstants.EVT_PLAY_DURATION_MS);
             if (mListener != null) {
                 mListener.onProgress(progress);
-                mListener.onSecondProgress(0);
+//                mListener.onSecondProgress(0);
                 mListener.onTotalTime(duration);
             }
         } else if (event == TXLiveConstants.PLAY_ERR_NET_DISCONNECT || event == TXLiveConstants.PLAY_ERR_FILE_NOT_FOUND) {

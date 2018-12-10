@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/top_ll"
+    android:layout_width="match_parent"
+    android:layout_height="55dp"
+    android:background="@drawable/top_title_bg_shape"
+    android:gravity="center_vertical"
+    android:paddingRight="5dp"
+    android:visibility="gone">
+
+    <RelativeLayout
+        android:id="@+id/back_rl"
+        android:layout_width="55dp"
+        android:layout_height="55dp"
+        android:clickable="true"
+        android:textColor="?android:attr/textColorPrimary"
+        android:visibility="gone">
+
+        <ImageView
+            android:id="@+id/back"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            android:layout_centerInParent="true"
+            android:src="@drawable/ic_player_back" />
+    </RelativeLayout>
+
+    <com.lljy.custommediaplayer.view.marquee.MarqueeText
+        android:id="@+id/title_tv"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="5dp"
+        android:layout_weight="1"
+        android:ellipsize="marquee"
+        android:marqueeRepeatLimit="marquee_forever"
+        android:singleLine="true"
+        android:textColor="@android:color/white"
+        android:textSize="19sp" />
+</LinearLayout>

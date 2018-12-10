@@ -4,14 +4,11 @@
     android:id="@+id/loading_rl"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_centerInParent="true"
     android:clickable="true"
     android:focusable="true"
-    android:focusableInTouchMode="true"
-    android:visibility="gone">
+    android:focusableInTouchMode="true">
 
     <com.github.ybq.android.spinkit.SpinKitView
-        android:id="@+id/spin_kit"
         style="@style/SpinKitView.Large.Circle"
         android:layout_width="100dp"
         android:layout_height="100dp"

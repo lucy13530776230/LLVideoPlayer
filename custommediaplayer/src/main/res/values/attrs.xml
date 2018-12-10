@@ -3,5 +3,10 @@
     <declare-styleable name="AbsCustomVideoPlayer">
         <attr name="needTouchControlVol" format="boolean" />
         <attr name="needTouchControlProgress" format="boolean" />
+        <attr name="needStartOrExitFullScreenButton" format="boolean" />
+        <attr name="needTopTitleAndBackLayout" format="boolean" />
+        <attr name="needBackButtonOnFullScreenStatus" format="boolean" />
+        <attr name="needBackButtonOnNormalScreenStatus" format="boolean" />
+        <attr name="needTitle" format="boolean" />
     </declare-styleable>
 </resources>

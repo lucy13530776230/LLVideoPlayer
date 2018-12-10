@@ -25,7 +25,6 @@ public class ControllerSimpleGestureListener extends GestureDetector.SimpleOnGes
     private boolean hasFF_REW = false;
     private View gestureLayout;
 
-
     private boolean needTouchControlVol;//手势滑动是否可控制音量
     private boolean needTouchControlProgress;//手势滑动是否可控制进度
 

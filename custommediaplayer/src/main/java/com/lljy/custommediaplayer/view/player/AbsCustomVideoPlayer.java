@@ -18,8 +18,10 @@ import com.lljy.custommediaplayer.download.VideoDownloadManager;
 import com.lljy.custommediaplayer.entity.VideoEntity;
 import com.lljy.custommediaplayer.interfs.IVideoListener;
 import com.lljy.custommediaplayer.interfs.IVideoPlayListener;
+import com.lljy.custommediaplayer.utils.VideoManager;
 import com.lljy.custommediaplayer.view.controller.AbsController;
 import com.lljy.custommediaplayer.view.engine.AbsVideoPlayer;
+import com.lljy.custommediaplayer.view.engine.AndroidMediaPlayer;
 import com.lljy.custommediaplayer.view.engine.LeVideoPlayer;
 import com.lljy.custommediaplayer.view.engine.TencentVideoPlayer;
 
@@ -43,7 +45,8 @@ import java.io.File;
  * ●缓冲进度{@link #onSecondProgress(int)}监听缓冲进度，并设置控制器{@link AbsController}进度条第二条进度；
  * ●总时间{@link #onTotalTime(int)}监听，设置控制器{@link AbsController}总时间显示；
  * ●监听视频加载{@link #onLoadingStart()}和停止加载{@link #onLoadingFinished()}，并设置控制器{@link AbsController}加载进度框状态；
- * ●监听打开全屏{@link #startFullScreen()} ()}和退出全屏{@link #exitFullScreen()} ()}，并将屏幕状态设置方式返回给调用者控制全屏,还可以设置控制器全屏按钮{@link AbsController}状态;
+ * ●监听打开全屏和退出全屏点击{@link #pressStartOrExitFullscreen(ScreenStatus)} ()} ()}，让调用者自己控制全屏状态;
+ * ●监听返回按钮点击{@link #pressedTitleBack(ScreenStatus)}，让调用者自己控制返回后的操作（是退出全屏还是退出应用等）
  * 抽象类实现了这些基本功能，如需拓展，可在子类进行拓展。
  * @author: XieGuangwei
  * @email: 775743075@qq.com
@@ -57,14 +60,20 @@ public abstract class AbsCustomVideoPlayer<T extends AbsController> extends Rela
     protected T mController;
 
     protected VideoEntity mVideo;
-    protected boolean isFirstEnter;//是否是第一次进入
+    protected boolean mIsFirstEnter;//是否是第一次进入
 
-    protected int currentProgress;//当前播放进度
+    protected int mCurrentProgress;//当前播放进度
 
     protected IVideoListener mListener;
 
-    protected boolean needTouchControlVol;
-    protected boolean needTouchControlProgress;
+    protected boolean mNeedTouchControlVol;//是否需要手指滑动控制音量
+    protected boolean mNeedTouchControlProgress;//是否需要手指滑动控制进度
+    protected boolean mNeedStartOrExitFullScreenButton;//是否需要退出或者打开全屏的按钮
+    protected boolean mNeedTopTitleAndBackLayout;//是否需要顶部布局
+    protected boolean mNeedBackButtonOnNormalScreenStatus;//是否在正常屏幕状态下需要返回按钮
+    protected boolean mNeedBackButtonOnFullScreenStatus;//是否在全屏状态小需要返回按钮
+    protected boolean mNeedTitle;//是否需要标题
+
 
     public AbsCustomVideoPlayer(Context context) {
         this(context, null);
@@ -97,8 +106,15 @@ public abstract class AbsCustomVideoPlayer<T extends AbsController> extends Rela
         this.mController = controller;
         addView(mController);
         if (mController != null) {
-            mController.setNeedTouchControlProgress(needTouchControlProgress);
-            mController.setNeedTouchControlVol(needTouchControlVol);
+            mController.setNeedTouchControlProgress(mNeedTouchControlProgress);
+            mController.setNeedTouchControlVol(mNeedTouchControlVol);
+            mController.setNeedStartOrExitFullScreenButton(mNeedStartOrExitFullScreenButton);
+            mController.setNeedTopTitleAndBackLayout(mNeedTopTitleAndBackLayout);
+            mController.setNeedBackButtonOnNormalScreenStatus(mNeedBackButtonOnNormalScreenStatus);
+            mController.setNeedBackButtonOnFullScreenStatus(mNeedBackButtonOnFullScreenStatus);
+            mController.setNeedTitle(mNeedTitle);
+            //初始化屏幕状态
+            setScreenStatus(ScreenStatus.SCREEN_STATUS_NORMAL);
         }
         setControllerListener(controller);
     }
@@ -117,22 +133,28 @@ public abstract class AbsCustomVideoPlayer<T extends AbsController> extends Rela
      */
     private void init(Context context, AttributeSet attrs) {
         TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.AbsCustomVideoPlayer);
-        needTouchControlProgress = typedArray.getBoolean(R.styleable.AbsCustomVideoPlayer_needTouchControlProgress, true);
-        needTouchControlVol = typedArray.getBoolean(R.styleable.AbsCustomVideoPlayer_needTouchControlVol, true);
+        mNeedTouchControlProgress = typedArray.getBoolean(R.styleable.AbsCustomVideoPlayer_needTouchControlProgress, true);//是否需要手指滑动控制进度，默认true
+        mNeedTouchControlVol = typedArray.getBoolean(R.styleable.AbsCustomVideoPlayer_needTouchControlVol, true);//是否需要手指滑动控制音量，默认true
+        mNeedStartOrExitFullScreenButton = typedArray.getBoolean(R.styleable.AbsCustomVideoPlayer_needStartOrExitFullScreenButton, true);//是否需要全屏/退出全屏按钮，默认true
+        mNeedTopTitleAndBackLayout = typedArray.getBoolean(R.styleable.AbsCustomVideoPlayer_needTopTitleAndBackLayout, true);//是否需要顶部布局，默认true
+        mNeedBackButtonOnNormalScreenStatus = typedArray.getBoolean(R.styleable.AbsCustomVideoPlayer_needBackButtonOnNormalScreenStatus, false);//是否需要在正常屏幕状态下显示返回按钮，默认false
+        mNeedBackButtonOnFullScreenStatus = typedArray.getBoolean(R.styleable.AbsCustomVideoPlayer_needBackButtonOnFullScreenStatus, true);//是否需要在全屏模式下显示返回按钮，默认true
+        mNeedTitle = typedArray.getBoolean(R.styleable.AbsCustomVideoPlayer_needTitle, true);
         typedArray.recycle();
-        currentProgress = 0;
+        mCurrentProgress = 0;
         setBackgroundColor(Color.BLACK);
         mContext = context;
-        isFirstEnter = true;
+        mIsFirstEnter = true;
     }
 
     protected void setVideoSource(VideoEntity videoEntity) {
-        currentProgress = 0;
+        mCurrentProgress = 0;
         if (mController != null) {
             Bundle params = new Bundle();
             if (videoEntity != null) {
                 String cover = videoEntity.getCoverUrl();
                 params.putString(VideoStatus.Constants.PLAY_COVER_URL, cover);
+                params.putString(VideoStatus.Constants.PLAY_TITLE, videoEntity.getVideoName());
             }
             mController.setVideoState(VideoStatus.MEDIA_STATE_PLAY_NEW, params);
         }
@@ -157,8 +179,13 @@ public abstract class AbsCustomVideoPlayer<T extends AbsController> extends Rela
         String vuid = videoEntity.getVu();
         String engineType = videoEntity.getVideoEngineType();
         String uniqueKey;
-        //腾讯播放器
-        if (VideoEngineType.TYPE_TENCENT.equals(engineType)) {
+        if (VideoEngineType.TYPE_ANDROID_MEDIA.equals(engineType)) {
+            //原生播放器
+            uniqueKey = videoEntity.getVideoEngineType() + videoEntity.getId();
+            mPlayer = new AndroidMediaPlayer(mContext);
+            Log.d(TAG, "使用原生视频播放引擎");
+        } else if (VideoEngineType.TYPE_TENCENT.equals(engineType)) {
+            //腾讯播放器
             uniqueKey = videoEntity.getVideoEngineType() + videoEntity.getId();
             mPlayer = new TencentVideoPlayer(mContext);
             Log.d(TAG, "使用腾讯视频播放引擎");
@@ -171,15 +198,19 @@ public abstract class AbsCustomVideoPlayer<T extends AbsController> extends Rela
             onError("该视频资源未找到");
             return;
         }
-        String nativeUrl = VideoDownloadManager.getInstance().getNativeUrl(uniqueKey);
-        if (!VideoDownloadManager.getInstance().isVideoExits(uniqueKey)) {
-            nativeUrl = null;
-        }
-        if (TextUtils.isEmpty(nativeUrl)) {
-            VideoDownloadManager.getInstance().addDownloadVideo(videoEntity);
+        String nativeUrl = null;
+        if (VideoManager.getInstance().isEnableDownloadEngine()) {
+            nativeUrl = VideoDownloadManager.getInstance().getNativeUrl(uniqueKey);
+            if (!VideoDownloadManager.getInstance().isVideoExits(uniqueKey)) {
+                nativeUrl = null;
+            }
+            if (TextUtils.isEmpty(nativeUrl)) {
+                VideoDownloadManager.getInstance().addDownloadVideo(videoEntity);
+            }
         }
         mVideo.setNativeUrl(nativeUrl);
         LayoutParams params = new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        params.addRule(CENTER_IN_PARENT);
         addView(mPlayer, 0, params);
         mPlayer.setListener(this);
         mPlayer.setVideoSource(videoEntity);
@@ -211,10 +242,10 @@ public abstract class AbsCustomVideoPlayer<T extends AbsController> extends Rela
      * 对应activity/fragment的onResume()方法
      */
     public void onResume() {
-        if (!isFirstEnter) {
+        if (!mIsFirstEnter) {
             initPlayer(mVideo);
         }
-        isFirstEnter = false;
+        mIsFirstEnter = false;
     }
 
     /**
@@ -252,9 +283,8 @@ public abstract class AbsCustomVideoPlayer<T extends AbsController> extends Rela
 
     @Override
     public void onPrepared() {
-        Log.d(TAG, "onPrepared current progress:" + currentProgress);
-        if (currentProgress > 0) {
-            seekTo(currentProgress);
+        if (mCurrentProgress > 0) {
+            seekTo(mCurrentProgress);
         }
         if (mController != null) {
             mController.setVideoState(VideoStatus.MEDIA_STATE_START_PLAY);
@@ -263,7 +293,7 @@ public abstract class AbsCustomVideoPlayer<T extends AbsController> extends Rela
 
     @Override
     public void onProgress(int progress) {
-        this.currentProgress = progress;
+        this.mCurrentProgress = progress;
         if (mController != null) {
             Bundle bundle = new Bundle();
             bundle.putInt(VideoStatus.Constants.PLAY_PROGRESS, progress);
@@ -295,7 +325,7 @@ public abstract class AbsCustomVideoPlayer<T extends AbsController> extends Rela
         if (mController != null) {
             mController.setVideoState(VideoStatus.MEDIA_STATE_COMPLETE);
         }
-        currentProgress = 0;
+        mCurrentProgress = 0;
     }
 
     @Override
@@ -345,36 +375,33 @@ public abstract class AbsCustomVideoPlayer<T extends AbsController> extends Rela
         }
     }
 
+
     /**
-     * 打开全屏
+     * 点击了全屏按钮
      */
-    public void startFullScreen() {
+    protected void pressStartOrExitFullscreen(ScreenStatus currentScreenStatus) {
         if (mListener != null) {
-            mListener.onStartFullScreen();
+            mListener.onStartOrExitFullScreenPressed(currentScreenStatus);
         }
     }
 
     /**
-     * 退出全屏
+     * 点击标题返回按钮后回调给调用者
      */
-    public void exitFullScreen() {
+    protected void pressedTitleBack(ScreenStatus currentScreenStatus) {
         if (mListener != null) {
-            mListener.onExitFullScreen();
+            mListener.onTitleBackPressed(currentScreenStatus);
         }
     }
 
     /**
-     * 点击了返回
+     * 设置屏幕状态
      *
-     * @return 如果退出全屏则返回false, 返回true表示可以退出
+     * @param screenStatus 屏幕状态
      */
-    public boolean onBackPressed() {
-        if (mController != null && mListener != null && mController.getScreenStatus() == ScreenStatus.SCREEN_STATUS_FULL) {
-            //先退出全屏
-            mListener.onExitFullScreen();
-            return false;
-        } else {
-            return true;
+    public void setScreenStatus(ScreenStatus screenStatus) {
+        if (mController != null) {
+            mController.setScreenStatus(screenStatus);
         }
     }
 

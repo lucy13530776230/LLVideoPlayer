@@ -3,6 +3,7 @@ package com.lljy.custommediaplayer.view.player;
 import android.content.Context;
 import android.util.AttributeSet;
 
+import com.lljy.custommediaplayer.constants.ScreenStatus;
 import com.lljy.custommediaplayer.entity.VideoEntity;
 import com.lljy.custommediaplayer.interfs.ControllerListener;
 import com.lljy.custommediaplayer.view.controller.SimpleController;
@@ -53,8 +54,28 @@ public class SimpleVideoPlayer extends AbsCustomVideoPlayer<SimpleController> im
      * 点击了开始播放/暂停
      */
     @Override
-    public void onPlayOrPauseClick() {
+    public void onPlayOrPausePressed() {
         super.playOrPause();
+    }
+
+    /**
+     * 点击了打开或者退出全屏
+     *
+     * @param currentScreenStatus 当前屏幕状态
+     */
+    @Override
+    public void onStartOrExitFullScreenPressed(ScreenStatus currentScreenStatus) {
+        super.pressStartOrExitFullscreen(currentScreenStatus);
+    }
+
+    /**
+     * 点击了标题栏的返回按钮
+     *
+     * @param currentScreenStatus 当前屏幕状态
+     */
+    @Override
+    public void onTitleBackPressed(ScreenStatus currentScreenStatus) {
+        super.pressedTitleBack(currentScreenStatus);
     }
 
     /**

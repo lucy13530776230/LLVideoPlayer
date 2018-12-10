@@ -1,5 +1,7 @@
 package com.lljy.custommediaplayer.interfs;
 
+import com.lljy.custommediaplayer.constants.ScreenStatus;
+
 /**
  * @desc: 视频播放器回调监听（给调用者使用，如activity、fragment）
  * @author: XieGuangwei
@@ -9,14 +11,17 @@ package com.lljy.custommediaplayer.interfs;
 
 public interface IVideoListener {
     /**
-     * 通知调用者打开全屏
+     * 点击了打开或者退出全屏
+     *
+     * @param currentScreenStatus 当前屏幕状态
      */
-    void onStartFullScreen();
+    void onStartOrExitFullScreenPressed(ScreenStatus currentScreenStatus);
 
     /**
-     * 通知调用者关闭全屏
+     * 返回
+     * @param currentScreenStatus 当前屏幕状态
      */
-    void onExitFullScreen();
+    void onTitleBackPressed(ScreenStatus currentScreenStatus);
 
     /**
      * 播放出错

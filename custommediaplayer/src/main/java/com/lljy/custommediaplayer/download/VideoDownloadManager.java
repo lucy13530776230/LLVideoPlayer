@@ -273,7 +273,7 @@ public class VideoDownloadManager {
                         if (leTasks != null) {
                             leTasks.add(info);
                         }
-                    } else if (VideoEngineType.TYPE_TENCENT.equals(videoEngineType) && !TextUtils.isEmpty(url)) {
+                    } else if ((VideoEngineType.TYPE_TENCENT.equals(videoEngineType) || VideoEngineType.TYPE_ANDROID_MEDIA.equals(videoEngineType)) && !TextUtils.isEmpty(url)) {
                         //使用OkDownloader下载引擎
                         Log.d(TAG, "使用OkDownloader下载引擎");
                         uniqueKey = videoEngineType + videoId;

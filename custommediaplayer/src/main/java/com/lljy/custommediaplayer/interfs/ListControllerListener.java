@@ -23,14 +23,4 @@ public interface ListControllerListener extends ControllerListener {
      * @param videoEntity 删除的视频
      */
     void onPlayedVideoDeleted(VideoEntity videoEntity);
-
-    /**
-     * 点击了全屏
-     */
-    void onStartFullScreen();
-
-    /**
-     * 退出了全屏
-     */
-    void onExitFullScreen();
 }

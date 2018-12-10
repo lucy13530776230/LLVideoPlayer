@@ -26,6 +26,7 @@ public class VideoManager {
     private static VideoManager instance;
     private Application app;
     private boolean cdeInitSuccess;
+    private boolean mEnableDownloadEngine = true;
 
     public static VideoManager getInstance() {
         if (instance == null) {
@@ -41,7 +42,9 @@ public class VideoManager {
     public VideoManager initApp(Application app) {
         this.app = app;
         initLePlayer(app);
-        VideoDownloadManager.getInstance().checkExpireVideos();
+        if (mEnableDownloadEngine) {
+            VideoDownloadManager.getInstance().checkExpireVideos();
+        }
         return this;
     }
 
@@ -53,6 +56,15 @@ public class VideoManager {
     public VideoManager setVideoExpireDays(@IntRange(from = 1, to = 30) int days) {
         VideoDownloadManager.getInstance().setExpireDays(days);
         return this;
+    }
+
+    public VideoManager enableDownloadEngine(boolean enable) {
+        mEnableDownloadEngine = enable;
+        return this;
+    }
+
+    public boolean isEnableDownloadEngine() {
+        return mEnableDownloadEngine;
     }
 
     /**

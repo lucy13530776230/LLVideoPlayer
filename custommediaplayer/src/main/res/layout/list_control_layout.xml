@@ -3,7 +3,11 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <include layout="@layout/list_video_bottom_progress_layout" />
+    <SurfaceView
+        android:layout_width="0dp"
+        android:layout_height="0dp" />
+
+    <include layout="@layout/video_bottom_progress_layout" />
 
     <ImageView
         android:id="@+id/cover_iv"
@@ -15,12 +19,14 @@
 
     <include layout="@layout/video_loading_layout" />
 
+
     <ImageView
         android:id="@+id/play_iv"
         android:layout_width="125dp"
         android:layout_height="125dp"
         android:layout_centerInParent="true"
-        android:src="@drawable/play_start" />
+        android:src="@drawable/play_start"
+        android:visibility="gone" />
 
     <include layout="@layout/video_error_layout" />
 
@@ -37,6 +43,8 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent"></android.support.v7.widget.RecyclerView>
     </RelativeLayout>
+
+    <include layout="@layout/top_layout" />
 
     <com.lljy.custommediaplayer.view.controller.ShowControlView
         android:id="@+id/scl"

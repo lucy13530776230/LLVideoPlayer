@@ -7,13 +7,13 @@
 ##### 1.添加权限
 
 ```xml
-<uses-permission android:name="android.permission.INTERNET" />
-<uses-permission android:name="android.permission.GET_TASKS"/>
+<uses-permission android:name="android.permission.INTERNET" /><!--必须-->
+<uses-permission android:name="android.permission.GET_TASKS"/><!--必须-->
 <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
-<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-<uses-permission android:name="android.permission.READ_LOGS" />
+<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" /><!--必须-->
+<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" /><!--必须-->
+<uses-permission android:name="android.permission.READ_LOGS" /><!--必须-->
 <uses-permission android:name="android.permission.RECORD_AUDIO" />
 <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
 <uses-permission android:name="android.permission.BLUETOOTH" />
@@ -122,6 +122,7 @@ public class AppConfig extends Application {
         super.onCreate();
         VideoManager.getInstance()
                 .initApp(this)//初始化全局Application
+            	.enableDownloadEngine(true)//默认就是true，不设置为true，播放时播放网络资源，并且不会下载
                 .setVideoExpireDays(1)//初始化视频过期时间
                 .setVideoSavedPath(Environment.getExternalStorageDirectory().getPath() + 	                                                    File.separator + "llplayer" + File.separator);//设置视频缓存目录
     }
@@ -147,21 +148,36 @@ xml
         android:id="@+id/video_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        app:needBackButtonOnFullScreenStatus="true"
+        app:needBackButtonOnNormalScreenStatus="true"
+        app:needStartOrExitFullScreenButton="true"
+        app:needTitle="true"
+        app:needTopTitleAndBackLayout="true"
         app:needTouchControlProgress="true"
         app:needTouchControlVol="true"></com.lljy.custommediaplayer.view.player.CustomListVideoPlayer>
 ```
 
-```java
 参数说明：
-needTouchControlProgress="true"//是否可手势滑动控制进度
-needTouchControlVol="true"//是否可手势滑动控制音量
-```
 
-java
+| 参数名                             | 参数类型 | 默认值 | 参数说明                                   |
+| ---------------------------------- | -------- | ------ | ------------------------------------------ |
+| needBackButtonOnFullScreenStatus   | boolean  | true   | 全屏时是否需要显示顶部返回按钮             |
+| needBackButtonOnNormalScreenStatus | boolean  | false  | 非全屏时是否需要显示顶部返回按钮           |
+| needStartOrExitFullScreenButton    | boolean  | true   | 是否需要全屏/退出全屏按钮                  |
+| needTitle                          | boolean  | true   | 是否需要视屏标题                           |
+| needTopTitleAndBackLayout          | boolean  | true   | 是否需要顶部布局（目前包含返回按钮和标题） |
+| needTouchControlProgress           | boolean  | true   | 是否需要手势控制播放进度（手势左右滑动）   |
+| needTouchControlVol                | boolean  | true   | 是否需要手动控制音量（手势上下滑动）       |
+
+
+
+初始化列表
 
 ```java
-mVideoView = findViewById(R.id.video_view);//初始化视频播放器
-mVideoView.setController(new ListController(this));//设置皮肤为列表
+mVideoView = findViewById(R.id.video_view);
+mVideoView.setController(new ListController(this));
+List<VideoEntity> videos = new ArrayList<>();
+
 VideoEntity video1 = new VideoEntity();
 video1.setPlaying(true);
 video1.setNetUrl("http://tanzi27niu.cdsb.mobi/wps/wp-content/uploads/2017/05/2017-05-17_17-33-30.mp4");
@@ -190,10 +206,8 @@ video3.setCoverUrl("http://tanzi27niu.cdsb.mobi/wps/wp-content/uploads/2017/05/2
 video3.setVideoName("Linux系统讲解");
 video3.setVideoEngineType(VideoEngineType.TYPE_LETV);
 videos.add(video3);
-mVideoView.setVideos(videos);//设置播放资源，并播放
-
-//注意：info、video_id、source、一定要设置，否则不能播放和缓存
-//回调，记录全屏，全屏需手动设置撑开布局
+//设置播放列表
+mVideoView.setVideos(videos);
 ```
 
 **（2）单个视频**
@@ -209,14 +223,13 @@ xml
         android:id="@+id/video_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        app:needBackButtonOnFullScreenStatus="true"
+        app:needBackButtonOnNormalScreenStatus="true"
+        app:needStartOrExitFullScreenButton="true"
+        app:needTitle="true"
+        app:needTopTitleAndBackLayout="true"
         app:needTouchControlProgress="true"
         app:needTouchControlVol="true"></com.lljy.custommediaplayer.view.player.SimpleVideoPlayer>
-```
-
-```java
-参数说明：
-needTouchControlProgress="true"//是否可手势滑动控制进度
-needTouchControlVol="true"//是否可手势滑动控制音量
 ```
 
 java

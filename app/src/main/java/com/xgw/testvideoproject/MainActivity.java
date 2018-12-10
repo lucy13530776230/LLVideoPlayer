@@ -3,11 +3,14 @@ package com.xgw.testvideoproject;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
+import com.lljy.custommediaplayer.constants.ScreenStatus;
 import com.lljy.custommediaplayer.constants.VideoEngineType;
 import com.lljy.custommediaplayer.entity.VideoEntity;
 import com.lljy.custommediaplayer.interfs.IVideoListener;
 import com.lljy.custommediaplayer.utils.VideoManager;
+import com.lljy.custommediaplayer.view.controller.ListController;
 import com.lljy.custommediaplayer.view.controller.SimpleController;
+import com.lljy.custommediaplayer.view.player.CustomListVideoPlayer;
 import com.lljy.custommediaplayer.view.player.SimpleVideoPlayer;
 
 import java.util.ArrayList;
@@ -70,28 +73,68 @@ public class MainActivity extends AppCompatActivity {
         videoNames[1] = "腾讯sdk下载载视频2";
         videoNames[2] = "乐视sdk下载载视频2";
 
-        mVideoView.setVideo(video2);
+        mVideoView.setVideo(video3);
         mVideoView.setListener(new IVideoListener() {
-            @Override
-            public void onStartFullScreen() {
 
+            /**
+             * 点击了打开或者退出全屏
+             *
+             * @param currentScreenStatus 当前屏幕状态
+             */
+            @Override
+            public void onStartOrExitFullScreenPressed(ScreenStatus currentScreenStatus) {
+                //在这里处理全屏、退出全屏操作
+//                if (currentScreenStatus == ScreenStatus.SCREEN_STATUS_FULL) {
+//                    //...退出全屏代码...
+//                    //执行完退出全屏代码记得给播放器设置当前屏幕为正常状态
+//                    mVideoView.setScreenStatus(ScreenStatus.SCREEN_STATUS_NORMAL);
+//                } else {
+//                    //...打开全屏代码...
+//                    //执行完打开全屏记得给播放器设置当前屏幕为全屏状态
+//                    mVideoView.setScreenStatus(ScreenStatus.SCREEN_STATUS_FULL);
+//                }
             }
 
+            /**
+             * 返回
+             *
+             * @param currentScreenStatus 当前屏幕状态
+             */
             @Override
-            public void onExitFullScreen() {
-
+            public void onTitleBackPressed(ScreenStatus currentScreenStatus) {
+                //点击了标题栏的返回按钮，执行的操作与点击手机返回按钮一样
+//                onBackPressed();
             }
 
+            /**
+             * 播放出错
+             *
+             * @param msg 错误信息
+             */
             @Override
             public void onError(String msg) {
 
             }
 
+            /**
+             * 播放完成
+             */
             @Override
             public void onComplete() {
 
             }
         });
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (mVideoView.getScreenStatus() == ScreenStatus.SCREEN_STATUS_FULL) {
+            //执行退出全屏操作
+            //退出全屏后设置屏幕状态为正常
+            mVideoView.setScreenStatus(ScreenStatus.SCREEN_STATUS_NORMAL);
+        } else {
+            super.onBackPressed();
+        }
     }
 
     @Override

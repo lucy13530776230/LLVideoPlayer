@@ -21,9 +21,9 @@ import com.bumptech.glide.Glide;
 import com.lljy.custommediaplayer.R;
 import com.lljy.custommediaplayer.constants.ScreenStatus;
 import com.lljy.custommediaplayer.constants.VideoStatus;
-import com.lljy.custommediaplayer.interfs.ControllerListener;
 import com.lljy.custommediaplayer.gesture.ControllerSimpleGestureListener;
 import com.lljy.custommediaplayer.gesture.GestureResultListener;
+import com.lljy.custommediaplayer.interfs.ControllerListener;
 import com.lljy.custommediaplayer.utils.VideoTimeUtils;
 
 import java.lang.ref.WeakReference;
@@ -61,6 +61,9 @@ public abstract class AbsController<T extends ControllerListener> extends Relati
     protected TextView mErrorTv;//错误内容
     protected ShowControlView mHintView;//提示框
 
+
+    private ImageView mFullScreenIv;//全屏按钮
+
     private LinearLayout mPlayProgressLl;//底部进度条父布局
 
     protected T mListener;//控制页面回调接口
@@ -78,12 +81,23 @@ public abstract class AbsController<T extends ControllerListener> extends Relati
     protected boolean mIsPlayError;
     protected boolean mIsComplete;
     protected boolean mIsPause;
+    protected boolean mIsLoading;
 
     protected ScreenStatus mScreenStatus = ScreenStatus.SCREEN_STATUS_NORMAL;//默认状态为退出全屏
 
     protected HideControlRunnable mHideRunnable;//延时隐藏线程
     protected Handler mHandler;
-    protected static final long delayMillis = 3000;
+    protected static final long delayHideMillis = 2000;
+
+    protected boolean isControlVisible = false;
+
+    protected LinearLayout mTopLl;
+    protected RelativeLayout mBackRl;
+    protected TextView mTitleTv;
+
+    protected boolean mNeedTopTitleAndBackLayout;//是否需要顶部布局
+    protected boolean mNeedBackButtonOnNormalStatus;//是否在正常屏幕状态下需要返回按钮
+    protected boolean mNeedBackButtonOnFullScreenStatus;//是否在全屏状态下需要返回按钮
 
     /**
      * 隐藏control布局的Runnable
@@ -134,42 +148,53 @@ public abstract class AbsController<T extends ControllerListener> extends Relati
             mAudioManager = (AudioManager) context.getSystemService(Service.AUDIO_SERVICE);
             maxVolume = mAudioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
             View contentView = LayoutInflater.from(context).inflate(getLayoutId(), this, true);
+            //顶部
+            mTopLl = contentView.findViewById(R.id.top_ll);
+            mBackRl = contentView.findViewById(R.id.back_rl);
+            if (mBackRl != null) {
+                mBackRl.setOnClickListener(v -> clickBack());
+            }
+            mTitleTv = contentView.findViewById(R.id.title_tv);
             //底部
             mTotalTimeTv = contentView.findViewById(R.id.duration_tv);
             mStartTimeTv = contentView.findViewById(R.id.play_start_tv);
             mPlayProgressLl = contentView.findViewById(R.id.play_progress);
             //进度条
             mSeekBar = contentView.findViewById(R.id.seekbar);
-            mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-                @Override
-                public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+            if (mSeekBar != null) {
+                mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+                    @Override
+                    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
 
-                }
-
-                @Override
-                public void onStartTrackingTouch(SeekBar seekBar) {
-
-                }
-
-                @Override
-                public void onStopTrackingTouch(SeekBar seekBar) {
-                    //停止拖动，获取总进度
-                    int totalTime = mSeekBar.getProgress();
-                    //跳转到当前位置
-                    if (mListener != null) {
-                        mListener.onSeekTo(totalTime);
                     }
-                }
-            });
+
+                    @Override
+                    public void onStartTrackingTouch(SeekBar seekBar) {
+
+                    }
+
+                    @Override
+                    public void onStopTrackingTouch(SeekBar seekBar) {
+                        //停止拖动，获取总进度
+                        int totalTime = mSeekBar.getProgress();
+                        //跳转到当前位置
+                        if (mListener != null) {
+                            mListener.onSeekTo(totalTime);
+                        }
+                    }
+                });
+            }
             //封面
             mCoverIv = contentView.findViewById(R.id.cover_iv);
             //开始/暂停
             mPlayOrPauseIv = contentView.findViewById(R.id.play_iv);
-            mPlayOrPauseIv.setOnClickListener(v -> {
-                if (mListener != null && !mIsPlayError) {
-                    mListener.onPlayOrPauseClick();
-                }
-            });
+            if (mPlayOrPauseIv != null) {
+                mPlayOrPauseIv.setOnClickListener(v -> {
+                    if (mListener != null && !mIsPlayError) {
+                        mListener.onPlayOrPausePressed();
+                    }
+                });
+            }
 
             //加载
             mLoadingRl = contentView.findViewById(R.id.loading_rl);
@@ -192,6 +217,9 @@ public abstract class AbsController<T extends ControllerListener> extends Relati
                 mControllerSimpleGestureListener.setVideoGestureListener(this);
             }
 
+            //全屏按钮
+            mFullScreenIv = contentView.findViewById(R.id.full_screen_iv);
+            mFullScreenIv.setOnClickListener(v -> startOrExitFullScreen());
 
             initExtensionViews(contentView, context);
         } catch (Exception e) {
@@ -199,15 +227,164 @@ public abstract class AbsController<T extends ControllerListener> extends Relati
         }
     }
 
+
+    /**
+     * 打开或者退出全屏
+     */
+    private void startOrExitFullScreen() {
+        if (mListener != null) {
+            mListener.onStartOrExitFullScreenPressed(mScreenStatus);
+        }
+    }
+
+    /**
+     * 点击了返回按钮
+     */
+    protected void clickBack() {
+        if (mListener != null) {
+            mListener.onTitleBackPressed(mScreenStatus);
+        }
+    }
+
+
+    /**
+     * 设置全屏状态 设置全屏状态后会更改全屏按钮样式、返回按钮可见/不可见
+     *
+     * @param screenStatus 全屏状态
+     */
+    public void setScreenStatus(ScreenStatus screenStatus) {
+        this.mScreenStatus = screenStatus;
+        if (mNeedTopTitleAndBackLayout && mBackRl != null) {
+            if (mScreenStatus == ScreenStatus.SCREEN_STATUS_FULL) {
+                if (mNeedBackButtonOnFullScreenStatus) {
+                    if (mBackRl.getVisibility() != VISIBLE) {
+                        mBackRl.setVisibility(VISIBLE);
+                    }
+                } else {
+                    if (mBackRl.getVisibility() != GONE) {
+                        mBackRl.setVisibility(GONE);
+                    }
+                }
+                if (mFullScreenIv != null) {
+                    //图标改为退出全屏
+                    mFullScreenIv.setImageResource(R.drawable.video_exit);
+                }
+            } else {
+                if (mNeedBackButtonOnNormalStatus) {
+                    if (mBackRl.getVisibility() != VISIBLE) {
+                        mBackRl.setVisibility(VISIBLE);
+                    }
+                } else {
+                    if (mBackRl.getVisibility() != GONE) {
+                        mBackRl.setVisibility(GONE);
+                    }
+                }
+                if (mFullScreenIv != null) {
+                    //图标改为打开全屏
+                    mFullScreenIv.setImageResource(R.drawable.video_full_screen);
+                }
+            }
+        }
+    }
+
+    /**
+     * 设置是否可触摸控制视频播放进度
+     *
+     * @param needTouchControlProgress 是否可触摸控制播放进度
+     */
     public void setNeedTouchControlProgress(boolean needTouchControlProgress) {
         if (mControllerSimpleGestureListener != null) {
             mControllerSimpleGestureListener.setNeedTouchControlProgress(needTouchControlProgress);
         }
     }
 
+    /**
+     * 设置是否可触摸控制视频音量
+     *
+     * @param needTouchControlVol 是否可触摸可触摸控制音量
+     */
     public void setNeedTouchControlVol(boolean needTouchControlVol) {
         if (mControllerSimpleGestureListener != null) {
             mControllerSimpleGestureListener.setNeedTouchControlVol(needTouchControlVol);
+        }
+    }
+
+
+    /**
+     * 设置是否需要全屏/退出全屏按钮
+     *
+     * @param needStartOrExitFullScreenButton 是否需要
+     */
+    public void setNeedStartOrExitFullScreenButton(boolean needStartOrExitFullScreenButton) {
+        if (mFullScreenIv != null) {
+            mFullScreenIv.setVisibility(needStartOrExitFullScreenButton ? VISIBLE : GONE);
+        }
+    }
+
+    /**
+     * 设置是否需要顶部的标题和返回按钮
+     *
+     * @param needTopTitleAndBackLayout 是否
+     */
+    public void setNeedTopTitleAndBackLayout(boolean needTopTitleAndBackLayout) {
+        this.mNeedTopTitleAndBackLayout = needTopTitleAndBackLayout;
+    }
+
+    /**
+     * 正常屏幕状态下是否需要返回按钮
+     *
+     * @param needBackButtonOnNormalScreenStatus 是否在非全屏状态下需要返回按钮
+     */
+    public void setNeedBackButtonOnNormalScreenStatus(boolean needBackButtonOnNormalScreenStatus) {
+        this.mNeedBackButtonOnNormalStatus = needBackButtonOnNormalScreenStatus;
+    }
+
+    /**
+     * 是否需要返回按钮
+     *
+     * @param needBackButtonOnFullScreenStatus 是否需要
+     */
+    public void setNeedBackButtonOnFullScreenStatus(boolean needBackButtonOnFullScreenStatus) {
+        this.mNeedBackButtonOnFullScreenStatus = needBackButtonOnFullScreenStatus;
+    }
+
+    /**
+     * 设置是否需要标题
+     *
+     * @param needTitle 是否需要
+     */
+    public void setNeedTitle(boolean needTitle) {
+        if (mTitleTv != null) {
+            mTitleTv.setVisibility(needTitle ? VISIBLE : GONE);
+        }
+    }
+
+    /**
+     * 设置标题
+     *
+     * @param title
+     */
+    private void setTitle(String title) {
+        if (mTitleTv != null) {
+            mTitleTv.setText(title);
+        }
+    }
+
+    /**
+     * 设置顶部可见
+     */
+    protected void showTitleAndBack() {
+        if (mTopLl != null && mTopLl.getVisibility() != VISIBLE) {
+            mTopLl.setVisibility(VISIBLE);
+        }
+    }
+
+    /**
+     * 设置顶部不可见
+     */
+    protected void dismissTitleAndBack() {
+        if (mTopLl != null && mTopLl.getVisibility() != GONE) {
+            mTopLl.setVisibility(GONE);
         }
     }
 
@@ -220,7 +397,7 @@ public abstract class AbsController<T extends ControllerListener> extends Relati
             }
         } else if (action == MotionEvent.ACTION_CANCEL || action == MotionEvent.ACTION_UP) {
             if (mHandler != null) {
-                mHandler.postDelayed(mHideRunnable, delayMillis);
+                mHandler.postDelayed(mHideRunnable, delayHideMillis);
             }
         }
         return super.dispatchTouchEvent(ev);
@@ -350,21 +527,26 @@ public abstract class AbsController<T extends ControllerListener> extends Relati
      * 加载loading
      */
     protected void startLoading() {
+        mIsLoading = true;
         if (mLoadingRl != null && mLoadingRl.getVisibility() != VISIBLE) {
             mLoadingRl.setVisibility(VISIBLE);
         }
-        dismissBottomProgress();
-        dismissPlayOrPauseIv();
+        delayControlVisibility(GONE);
         dismissErrorLayout();
+        if (mNeedTopTitleAndBackLayout) {
+            showTitleAndBack();
+        }
     }
 
     /**
      * 停止加载
      */
     protected void stopLoading() {
+        mIsLoading = false;
         if (mLoadingRl != null && mLoadingRl.getVisibility() != GONE) {
             mLoadingRl.setVisibility(GONE);
         }
+        dismissTitleAndBack();
     }
 
     /**
@@ -390,7 +572,7 @@ public abstract class AbsController<T extends ControllerListener> extends Relati
      * 显示底部布局
      */
     protected void showBottomProgress() {
-        if (mPlayProgressLl != null && mPlayProgressLl.getVisibility() != VISIBLE) {
+        if (mPlayProgressLl != null && mPlayProgressLl.getVisibility() != VISIBLE && !mIsComplete && !mIsPlayError) {
             mPlayProgressLl.setVisibility(VISIBLE);
         }
     }
@@ -489,36 +671,36 @@ public abstract class AbsController<T extends ControllerListener> extends Relati
      * @param visibility 显示/隐藏
      */
     protected void delayControlVisibility(int visibility) {
+        if (mHandler != null) {
+            mHandler.removeCallbacks(mHideRunnable);
+        }
         if (mIsPlayError) {//播放错误状态下不准显示这些东西
+            isControlVisible = false;
             dismissPlayOrPauseIv();
             dismissBottomProgress();
             stopLoading();
         } else {
-            if (visibility == VISIBLE && !mIsComplete && !mIsPause) {
+            if (visibility == VISIBLE) {
+                isControlVisible = true;
                 showPlayOrPauseIv();
                 showBottomProgress();
+                if (mNeedTopTitleAndBackLayout) {
+                    showTitleAndBack();
+                }
+                if (mHandler != null) {
+                    mHandler.postDelayed(mHideRunnable, delayHideMillis);
+                }
             } else {
                 if (!mIsComplete && !mIsPause) {
                     dismissPlayOrPauseIv();
                 }
+                if (!mIsLoading) {
+                    dismissTitleAndBack();
+                }
                 dismissBottomProgress();
+                isControlVisible = false;
             }
         }
-        if (mHandler != null) {
-            mHandler.removeCallbacks(mHideRunnable);
-            if (visibility == VISIBLE) {
-                mHandler.postDelayed(mHideRunnable, delayMillis);
-            }
-        }
-    }
-
-    /**
-     * 设置全屏状态
-     *
-     * @param screenStatus 全屏状态{@link com.lljy.custommediaplayer.constants.ScreenStatus}
-     */
-    protected void setScreenStatus(ScreenStatus screenStatus) {
-        this.mScreenStatus = screenStatus;
     }
 
     /**
@@ -570,6 +752,9 @@ public abstract class AbsController<T extends ControllerListener> extends Relati
 
     @Override
     public void onFF_REWGesture(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+        if (mIsPlayError || mIsPause || mIsComplete) {
+            return;
+        }
         float duration = mTotalTime / 1000;
         float offset = e2.getX() - e1.getX();
         //根据移动的正负决定快进还是快退
@@ -599,7 +784,7 @@ public abstract class AbsController<T extends ControllerListener> extends Relati
     @Override
     public void onSingleTapGesture(MotionEvent e) {
         Log.e(TAG, "single tap");
-        delayControlVisibility(VISIBLE);
+        delayControlVisibility(isControlVisible ? GONE : VISIBLE);
     }
 
     @Override
@@ -611,7 +796,7 @@ public abstract class AbsController<T extends ControllerListener> extends Relati
     public void onDown(MotionEvent e) {
         //每次按下的时候更新当前音量，还有进度
         if (mTotalTime != 0) {
-            oldFF_REWProgress = (int) ((100 * mCurrentProgress) / mTotalTime);
+            oldFF_REWProgress = ((100 * mCurrentProgress) / mTotalTime);
         } else {
             oldFF_REWProgress = 0;
         }
@@ -620,7 +805,7 @@ public abstract class AbsController<T extends ControllerListener> extends Relati
 
     @Override
     public void onEndFF_REW(MotionEvent e) {
-        if (mListener != null) {
+        if (mListener != null && !mIsPlayError && !mIsPause && !mIsComplete) {
             mListener.onSeekTo((int) newPlaybackTime * 1000);
         }
     }
@@ -635,9 +820,8 @@ public abstract class AbsController<T extends ControllerListener> extends Relati
         if (mHandler != null) {
             mHandler.removeCallbacksAndMessages(null);
         }
-        dismissBottomProgress();
+        delayControlVisibility(GONE);
         dismissErrorLayout();
-        dismissPlayOrPauseIv();
         showCover();
     }
 
@@ -649,8 +833,7 @@ public abstract class AbsController<T extends ControllerListener> extends Relati
         if (mPlayOrPauseIv != null) {
             mPlayOrPauseIv.setImageResource(R.drawable.play_start);
         }
-        dismissBottomProgress();
-        showPlayOrPauseIv();
+        delayControlVisibility(VISIBLE);
     }
 
     /**
@@ -661,8 +844,7 @@ public abstract class AbsController<T extends ControllerListener> extends Relati
         if (mPlayOrPauseIv != null) {
             mPlayOrPauseIv.setImageResource(R.drawable.play_pause);
         }
-        dismissPlayOrPauseIv();
-        dismissBottomProgress();
+        delayControlVisibility(GONE);
         dismissCover();
     }
 
@@ -672,12 +854,15 @@ public abstract class AbsController<T extends ControllerListener> extends Relati
      * @param params 新视频参数
      */
     protected void onPlayNewHandle(Bundle params) {
+        mIsPlayError = false;
+        mIsComplete = false;
         if (params != null) {
             String coverUrl = params.getString(VideoStatus.Constants.PLAY_COVER_URL);
             setCover(coverUrl);
+            String title = params.getString(VideoStatus.Constants.PLAY_TITLE);
+            setTitle(title);
         }
-        dismissBottomProgress();
-        dismissPlayOrPauseIv();
+        delayControlVisibility(GONE);
         dismissErrorLayout();
         showCover();
         startLoading();
@@ -687,16 +872,13 @@ public abstract class AbsController<T extends ControllerListener> extends Relati
      * 开始播放的处理
      */
     protected void onStartPlayHandle() {
-        mIsPlayError = false;
-        mIsComplete = false;
         if (mPlayOrPauseIv != null) {
             mPlayOrPauseIv.setImageResource(R.drawable.play_pause);
         }
         dismissCover();
         stopLoading();
-        dismissBottomProgress();
-        dismissPlayOrPauseIv();
         dismissErrorLayout();
+        delayControlVisibility(GONE);
     }
 
     /**
@@ -710,8 +892,7 @@ public abstract class AbsController<T extends ControllerListener> extends Relati
         if (params != null) {
             errorMsg = params.getString(VideoStatus.Constants.PLAY_ERROR_MSG);
         }
-        dismissBottomProgress();
-        dismissPlayOrPauseIv();
+        delayControlVisibility(GONE);
         stopLoading();
         showErrorLayout(errorMsg);
     }
@@ -740,9 +921,8 @@ public abstract class AbsController<T extends ControllerListener> extends Relati
         if (mPlayOrPauseIv != null) {
             mPlayOrPauseIv.setImageResource(R.drawable.play_start);
         }
+        delayControlVisibility(GONE);
         dismissErrorLayout();
-        dismissBottomProgress();
-        showPlayOrPauseIv();
         showCover();
     }
 

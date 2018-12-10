@@ -16,7 +16,6 @@ import android.widget.Toast;
 import com.lljy.custommediaplayer.R;
 import com.lljy.custommediaplayer.adapter.VideoListAdapter;
 import com.lljy.custommediaplayer.constants.PlayMode;
-import com.lljy.custommediaplayer.constants.ScreenStatus;
 import com.lljy.custommediaplayer.constants.VideoStatus;
 import com.lljy.custommediaplayer.entity.VideoEntity;
 import com.lljy.custommediaplayer.interfs.ControllerListener;
@@ -43,8 +42,8 @@ public class ListController extends AbsController<ListControllerListener> {
     private RecyclerView mVideoListRv;//视频列表
     private VideoListAdapter mAdapter;//视频列表适配器
     private ImageView playModeIv;//播放模式
-    private ImageView fullScreenIv;//全屏按钮
     private PlayNextRunnable mPlayNextRunnable;
+    private static final long delayPlayNextMillis = 4000;
 
     public ListController(Context context) {
         super(context);
@@ -66,33 +65,8 @@ public class ListController extends AbsController<ListControllerListener> {
     }
 
     @Override
-    protected void onPauseHandle() {
-        super.onPauseHandle();
-        dismissListRl();
-    }
-
-    @Override
-    protected void onResumeHandle() {
-        super.onResumeHandle();
-        dismissListRl();
-    }
-
-    @Override
-    protected void onPlayNewHandle(Bundle params) {
-        super.onPlayNewHandle(params);
-        dismissListRl();
-    }
-
-    @Override
-    protected void onStartPlayHandle() {
-        super.onStartPlayHandle();
-        dismissListRl();
-    }
-
-    @Override
     protected void onErrorHandle(Bundle params) {
         super.onErrorHandle(params);
-        dismissListRl();
         String errorMsg = "视频播放出错";
         boolean isPlayCache = false;
         if (params != null && !TextUtils.isEmpty(params.getString(VideoStatus.Constants.PLAY_ERROR_MSG))) {
@@ -145,20 +119,8 @@ public class ListController extends AbsController<ListControllerListener> {
         if (mHandler != null && mPlayNextRunnable != null) {
             mPlayNextRunnable.setVideoEntity(videoEntity);
             mHandler.removeCallbacks(mPlayNextRunnable);
-            mHandler.postDelayed(mPlayNextRunnable, delayMillis);
+            mHandler.postDelayed(mPlayNextRunnable, delayPlayNextMillis);
         }
-    }
-
-    @Override
-    protected void onBufferStartHandle() {
-        super.onBufferStartHandle();
-        dismissListRl();
-    }
-
-    @Override
-    protected void onBufferEndHandle() {
-        super.onBufferEndHandle();
-        dismissListRl();
     }
 
     @Override
@@ -167,7 +129,6 @@ public class ListController extends AbsController<ListControllerListener> {
         if (mHandler != null) {
             mHandler.removeCallbacksAndMessages(null);
         }
-        dismissListRl();
     }
 
     /**
@@ -235,6 +196,7 @@ public class ListController extends AbsController<ListControllerListener> {
         if (mAdapter != null) {
             mAdapter.setOnItemChildClickListener((adapter, view, position) -> {
                 if (mListener != null) {
+                    startLoading();
                     setPlay(position);
                     mListener.onVideoSelected((VideoEntity) adapter.getItem(position));
                 }
@@ -255,9 +217,8 @@ public class ListController extends AbsController<ListControllerListener> {
         mAdapter = new VideoListAdapter(null);
         mVideoListRv.setAdapter(mAdapter);
         playModeIv = contentView.findViewById(R.id.play_model_iv);
+        playModeIv.setVisibility(GONE);
         playModeIv.setOnClickListener(v -> setPlayMode());
-        fullScreenIv = contentView.findViewById(R.id.full_screen_iv);
-        fullScreenIv.setOnClickListener(v -> startOrExitFullScreen());
     }
 
     /**
@@ -268,12 +229,6 @@ public class ListController extends AbsController<ListControllerListener> {
     @Override
     protected int getLayoutId() {
         return R.layout.list_control_layout;
-    }
-
-    @Override
-    protected void startLoading() {
-        super.startLoading();
-        dismissListRl();
     }
 
     @Override
@@ -523,29 +478,6 @@ public class ListController extends AbsController<ListControllerListener> {
             }
             if (playEntity != null) {
                 mListener.onVideoSelected(playEntity);
-            }
-        }
-    }
-
-    /**
-     * 打开或者退出全屏
-     */
-    private void startOrExitFullScreen() {
-        if (fullScreenIv != null && mListener != null) {
-            if (mScreenStatus == ScreenStatus.SCREEN_STATUS_NORMAL) {
-                //打开全屏
-                mListener.onStartFullScreen();
-                //图标改为退出全屏
-                fullScreenIv.setImageResource(R.drawable.video_exit);
-                //屏幕状态改为全屏
-                super.setScreenStatus(ScreenStatus.SCREEN_STATUS_FULL);
-            } else {
-                //关闭全屏
-                mListener.onExitFullScreen();
-                //图标改为打开全屏
-                fullScreenIv.setImageResource(R.drawable.video_full_screen);
-                //屏幕状态改为正常
-                super.setScreenStatus(ScreenStatus.SCREEN_STATUS_NORMAL);
             }
         }
     }

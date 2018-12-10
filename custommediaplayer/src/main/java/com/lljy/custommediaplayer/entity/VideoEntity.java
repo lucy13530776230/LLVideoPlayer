@@ -20,7 +20,7 @@ public class VideoEntity implements Comparable<VideoEntity>, Serializable, Clone
     private String id;//视频id
     private String order;//视频顺序
     private String videoName;//视频名称
-    private String videoEngineType = VideoEngineType.TYPE_TENCENT;//默认是腾讯视频播放引擎
+    private String videoEngineType = VideoEngineType.TYPE_ANDROID_MEDIA;//默认是android原生视频播放引擎
     private String netUrl;//网络地址
     private String nativeUrl;//本地地址
     private String coverUrl;//封面地址
@@ -111,7 +111,7 @@ public class VideoEntity implements Comparable<VideoEntity>, Serializable, Clone
 
     @Override
     public boolean equals(Object obj) {
-        return obj instanceof VideoEntity && !TextUtils.isEmpty(((VideoEntity) obj).id) && (((VideoEntity) obj).id).equals(id) && !TextUtils.isEmpty(((VideoEntity) obj).videoEngineType) && ((VideoEntity) obj).videoEngineType.equals(videoEngineType);
+        return obj instanceof VideoEntity && !TextUtils.isEmpty(((VideoEntity) obj).id) && (((VideoEntity) obj).id).equals(id);
     }
 
     @Override

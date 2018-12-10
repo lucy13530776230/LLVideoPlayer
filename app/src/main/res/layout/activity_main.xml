@@ -10,6 +10,11 @@
         android:id="@+id/video_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        app:needBackButtonOnFullScreenStatus="true"
+        app:needBackButtonOnNormalScreenStatus="true"
+        app:needStartOrExitFullScreenButton="true"
+        app:needTitle="true"
+        app:needTopTitleAndBackLayout="true"
         app:needTouchControlProgress="true"
         app:needTouchControlVol="true"></com.lljy.custommediaplayer.view.player.SimpleVideoPlayer>
 

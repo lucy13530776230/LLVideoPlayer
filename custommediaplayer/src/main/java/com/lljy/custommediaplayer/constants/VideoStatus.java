@@ -29,5 +29,6 @@ public final class VideoStatus {
         public static final String PLAY_PROGRESS = "playProgress";//视频进度
         public static final String PLAY_SECOND_PROGRESS = "secondProgress";//缓冲进度
         public static final String PLAY_TOTAL_TIME = "totoalTime";//总时间
+        public static final String PLAY_TITLE = "playTitle";//播放标题
     }
 }

@@ -12,8 +12,10 @@ public class AppConfig extends Application {
     public void onCreate() {
         super.onCreate();
         VideoManager.getInstance()
-                .initApp(this)
-                .setVideoExpireDays(1)
-                .setVideoSavedPath(Environment.getExternalStorageDirectory().getPath() + File.separator + "llplayer" + File.separator);
+                .initApp(this)//初始化app上下文给播放器
+                .setVideoExpireDays(1)//设置下载的离线文件超时时间，不设置默认30天会清理下载文件
+                .enableDownloadEngine(true)//默认就是true
+                .setVideoSavedPath(Environment.getExternalStorageDirectory().getPath()
+                        + File.separator + "llplayer" + File.separator);
     }
 }
