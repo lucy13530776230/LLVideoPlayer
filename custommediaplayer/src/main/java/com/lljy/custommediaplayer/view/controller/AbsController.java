@@ -17,7 +17,6 @@ import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
-import com.bumptech.glide.Glide;
 import com.lljy.custommediaplayer.R;
 import com.lljy.custommediaplayer.constants.ScreenStatus;
 import com.lljy.custommediaplayer.constants.VideoStatus;
@@ -78,10 +77,10 @@ public abstract class AbsController<T extends ControllerListener> extends Relati
     protected int mTotalTime;//总时间
     protected int mCurrentProgress;//当前播放进度
 
-    protected boolean mIsPlayError;
-    protected boolean mIsComplete;
-    protected boolean mIsPause;
-    protected boolean mIsLoading;
+    protected boolean mIsPlayError;//是否播放错误
+    protected boolean mIsComplete;//是否播放完毕
+    protected boolean mIsPause;//是否暂停
+    protected boolean mIsLoading;//是否正在加载
 
     protected ScreenStatus mScreenStatus = ScreenStatus.SCREEN_STATUS_NORMAL;//默认状态为退出全屏
 
@@ -94,6 +93,8 @@ public abstract class AbsController<T extends ControllerListener> extends Relati
     protected LinearLayout mTopLl;
     protected RelativeLayout mBackRl;
     protected TextView mTitleTv;
+
+    protected TextView mReloadTv;
 
     protected boolean mNeedTopTitleAndBackLayout;//是否需要顶部布局
     protected boolean mNeedBackButtonOnNormalStatus;//是否在正常屏幕状态下需要返回按钮
@@ -201,7 +202,12 @@ public abstract class AbsController<T extends ControllerListener> extends Relati
             //错误布局
             mErrorRl = contentView.findViewById(R.id.error_rl);
             mErrorTv = contentView.findViewById(R.id.error_tv);
-
+            mReloadTv = contentView.findViewById(R.id.click_reload_tv);
+            mReloadTv.setOnClickListener(v -> {
+                if (mListener != null) {
+                    mListener.onReloadClick();
+                }
+            });
             //手势相关
             mControllerSimpleGestureListener = new ControllerSimpleGestureListener(this);
             mGestureDetector = new GestureDetector(context, mControllerSimpleGestureListener);
@@ -360,6 +366,17 @@ public abstract class AbsController<T extends ControllerListener> extends Relati
     }
 
     /**
+     * 是否需要重试按钮
+     *
+     * @param needReloadButton 是否需要
+     */
+    public void setNeedReloadButton(boolean needReloadButton) {
+        if (mReloadTv != null) {
+            mReloadTv.setVisibility(needReloadButton ? VISIBLE : GONE);
+        }
+    }
+
+    /**
      * 设置标题
      *
      * @param title
@@ -495,10 +512,8 @@ public abstract class AbsController<T extends ControllerListener> extends Relati
      */
     protected void setCover(String cover) {
         try {
-            if (mCoverIv != null) {
-                Glide.with(mCoverIv.getContext())
-                        .load(cover)
-                        .into(mCoverIv);
+            if (mCoverIv != null && mListener != null) {
+                mListener.onCoverLoad(mCoverIv, cover);
             }
         } catch (Exception e) {
             e.printStackTrace();

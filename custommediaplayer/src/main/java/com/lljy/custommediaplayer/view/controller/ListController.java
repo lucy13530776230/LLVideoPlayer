@@ -214,7 +214,11 @@ public class ListController extends AbsController<ListControllerListener> {
         mVideoListRl = contentView.findViewById(R.id.video_list_rl);
         mVideoListRv = contentView.findViewById(R.id.video_list_rv);
         mVideoListRv.setLayoutManager(new LinearLayoutManager(context));
-        mAdapter = new VideoListAdapter(null);
+        mAdapter = new VideoListAdapter(null, (imageView, cover) -> {
+            if (mListener != null && imageView != null) {
+                mListener.onCoverLoad(imageView, cover);
+            }
+        });
         mVideoListRv.setAdapter(mAdapter);
         playModeIv = contentView.findViewById(R.id.play_model_iv);
         playModeIv.setVisibility(GONE);

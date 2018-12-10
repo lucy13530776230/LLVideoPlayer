@@ -8,6 +8,7 @@ import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
 import com.lljy.custommediaplayer.R;
@@ -73,6 +74,7 @@ public abstract class AbsCustomVideoPlayer<T extends AbsController> extends Rela
     protected boolean mNeedBackButtonOnNormalScreenStatus;//是否在正常屏幕状态下需要返回按钮
     protected boolean mNeedBackButtonOnFullScreenStatus;//是否在全屏状态小需要返回按钮
     protected boolean mNeedTitle;//是否需要标题
+    protected boolean mNeedReloadButton;//是否需要重试按钮
 
 
     public AbsCustomVideoPlayer(Context context) {
@@ -113,6 +115,7 @@ public abstract class AbsCustomVideoPlayer<T extends AbsController> extends Rela
             mController.setNeedBackButtonOnNormalScreenStatus(mNeedBackButtonOnNormalScreenStatus);
             mController.setNeedBackButtonOnFullScreenStatus(mNeedBackButtonOnFullScreenStatus);
             mController.setNeedTitle(mNeedTitle);
+            mController.setNeedReloadButton(mNeedReloadButton);
             //初始化屏幕状态
             setScreenStatus(ScreenStatus.SCREEN_STATUS_NORMAL);
         }
@@ -139,7 +142,8 @@ public abstract class AbsCustomVideoPlayer<T extends AbsController> extends Rela
         mNeedTopTitleAndBackLayout = typedArray.getBoolean(R.styleable.AbsCustomVideoPlayer_needTopTitleAndBackLayout, true);//是否需要顶部布局，默认true
         mNeedBackButtonOnNormalScreenStatus = typedArray.getBoolean(R.styleable.AbsCustomVideoPlayer_needBackButtonOnNormalScreenStatus, false);//是否需要在正常屏幕状态下显示返回按钮，默认false
         mNeedBackButtonOnFullScreenStatus = typedArray.getBoolean(R.styleable.AbsCustomVideoPlayer_needBackButtonOnFullScreenStatus, true);//是否需要在全屏模式下显示返回按钮，默认true
-        mNeedTitle = typedArray.getBoolean(R.styleable.AbsCustomVideoPlayer_needTitle, true);
+        mNeedTitle = typedArray.getBoolean(R.styleable.AbsCustomVideoPlayer_needTitle, true);//是否需要标题，默认true
+        mNeedReloadButton = typedArray.getBoolean(R.styleable.AbsCustomVideoPlayer_needReloadButton, true);//是否需要重试按钮，默认true
         typedArray.recycle();
         mCurrentProgress = 0;
         setBackgroundColor(Color.BLACK);
@@ -243,7 +247,7 @@ public abstract class AbsCustomVideoPlayer<T extends AbsController> extends Rela
      */
     public void onResume() {
         if (!mIsFirstEnter) {
-            initPlayer(mVideo);
+            setVideoSource(mVideo);
         }
         mIsFirstEnter = false;
     }
@@ -326,6 +330,9 @@ public abstract class AbsCustomVideoPlayer<T extends AbsController> extends Rela
             mController.setVideoState(VideoStatus.MEDIA_STATE_COMPLETE);
         }
         mCurrentProgress = 0;
+        if (mListener != null) {
+            mListener.onComplete();
+        }
     }
 
     @Override
@@ -355,6 +362,9 @@ public abstract class AbsCustomVideoPlayer<T extends AbsController> extends Rela
                     }
                     VideoDownloadManager.getInstance().removeDownloadRecord(uniqueKey);
                 }
+            }
+            if (mListener != null) {
+                mListener.onError(errorMsg);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -392,6 +402,25 @@ public abstract class AbsCustomVideoPlayer<T extends AbsController> extends Rela
         if (mListener != null) {
             mListener.onTitleBackPressed(currentScreenStatus);
         }
+    }
+
+    /**
+     * 加载封面
+     *
+     * @param imageView 图片控件
+     * @param cover     封面地址
+     */
+    protected void loadCover(ImageView imageView, String cover) {
+        if (mListener != null) {
+            mListener.onCoverLoad(imageView, cover);
+        }
+    }
+
+    /**
+     * 重试
+     */
+    protected void reload() {
+        setVideoSource(mVideo);
     }
 
     /**

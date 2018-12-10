@@ -8,5 +8,6 @@
         <attr name="needBackButtonOnFullScreenStatus" format="boolean" />
         <attr name="needBackButtonOnNormalScreenStatus" format="boolean" />
         <attr name="needTitle" format="boolean" />
+        <attr name="needReloadButton" format="boolean" />
     </declare-styleable>
 </resources>

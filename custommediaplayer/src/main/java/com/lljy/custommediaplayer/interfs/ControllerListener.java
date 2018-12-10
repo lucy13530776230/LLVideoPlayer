@@ -1,5 +1,8 @@
 package com.lljy.custommediaplayer.interfs;
 
+import android.content.Context;
+import android.widget.ImageView;
+
 import com.lljy.custommediaplayer.constants.ScreenStatus;
 
 /**
@@ -40,4 +43,17 @@ public interface ControllerListener {
      * @param currentScreenStatus 当前屏幕状态
      */
     void onTitleBackPressed(ScreenStatus currentScreenStatus);
+
+    /**
+     * 加载封面图片
+     *
+     * @param imageView 图片控件
+     * @param cover     图片地址
+     */
+    void onCoverLoad(ImageView imageView, String cover);
+
+    /**
+     * 点击了重新加载
+     */
+    void onReloadClick();
 }

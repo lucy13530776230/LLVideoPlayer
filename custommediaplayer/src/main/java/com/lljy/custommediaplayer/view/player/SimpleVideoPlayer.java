@@ -2,6 +2,7 @@ package com.lljy.custommediaplayer.view.player;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.widget.ImageView;
 
 import com.lljy.custommediaplayer.constants.ScreenStatus;
 import com.lljy.custommediaplayer.entity.VideoEntity;
@@ -76,6 +77,23 @@ public class SimpleVideoPlayer extends AbsCustomVideoPlayer<SimpleController> im
     @Override
     public void onTitleBackPressed(ScreenStatus currentScreenStatus) {
         super.pressedTitleBack(currentScreenStatus);
+    }
+
+    /**
+     * 加载封面图片
+     *
+     * @param imageView 图片控件
+     * @param cover     图片地址
+     */
+    @Override
+    public void onCoverLoad(ImageView imageView, String cover) {
+        super.loadCover(imageView, cover);
+    }
+
+
+    @Override
+    public void onReloadClick() {
+        super.reload();
     }
 
     /**

@@ -45,8 +45,6 @@ dependencies {
     implementation 'com.github.ybq:Android-SpinKit:1.2.0'
     api(name: 'LiteAVSDK_Player', ext: 'aar')
     api project(':LePlayerSdk')
-    //glide加载变换（如圆角等）
-    api 'jp.wasabeef:glide-transformations:3.0.1'
     //万用适配器
     api 'com.github.CymChad:BaseRecyclerViewAdapterHelper:2.9.15'
 
