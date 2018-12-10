@@ -247,9 +247,16 @@ video3.setVideoName("Linux系统讲解");
 mVideoView.setVideo(video2);//设置播放资源，并播放
 ```
 
-### 6.回调监听
+#### （3）播放出错
+
+图示：
+
+![](http://git.cke123.com/XieGuangwei/CustomVideoPlayer/raw/master/screenshot/error.png)
+
+### 6.回调监听（回调监听注册一定要加载mVideoView.setController之前）
 
 ```java
+//回调监听注册一定要加载mVideoView.setController之前，回调监听注册一定要加载mVideoView.setController之前，回调监听注册一定要加载mVideoView.setController之前，
 mVideoView.setListener(new IVideoListener() {
 
             /**
@@ -299,6 +306,18 @@ mVideoView.setListener(new IVideoListener() {
             public void onComplete() {
 
             }
+    
+    		/**
+             * 加载封面图片
+             * @param imageView 图片控件
+             * @param cover     图片地址
+             */
+            @Override
+            public void onCoverLoad(ImageView imageView, String cover) {
+                Glide.with(MainActivity.this)
+                        .load(cover)
+                        .into(imageView);
+            }
         });
 ```
 
@@ -339,4 +358,12 @@ public void onBackPressed() {
 
 ### 8.引擎选择机制
 
-​	设置的VideoEngineType来选择播放引擎和下载引擎，默认会设置引擎类型为VideoEngineType.TYPE_ANDROID_MEDIA，如需使用乐视播放器引擎播放和下载，需设置引擎类型为videoEntity.setVideoEngineType(VideoEngineType.TYPE_LETV)，播放器会根据设置的类型选择播放和下载类型。VideoEngineType类型一共有三种：TYPE_ANDROID_MEDIA、TYPE_TENCENT和TYPE_LETV。
+VideoEntity.setVideoEngineType(VideoEngineType)
+
+| 类型                               | 说明                 |
+| ---------------------------------- | -------------------- |
+| VideoEngineType.TYPE_ANDROID_MEDIA | 原生播放器（默认值） |
+| VideoEngineType.TYPE_TENCENT       | 腾讯视频播放器       |
+| VideoEngineType.TYPE_LETV          | 乐视视频播放器       |
+
+实体类默认使用原生播放器，设置腾讯视频播放器和乐视播放器播放链接可以支持多种格式，原生的支持格式相对较少。

@@ -139,7 +139,7 @@ public class MainActivity extends AppCompatActivity {
         videoNames[1] = "腾讯sdk下载载视频2";
         videoNames[2] = "乐视sdk下载载视频2";
 
-        mVideoView.setVideo(video3);
+        mVideoView.setVideo(null);
     }
 
     @Override
