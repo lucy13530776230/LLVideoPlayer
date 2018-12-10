@@ -28,6 +28,8 @@
 
     <include layout="@layout/video_error_layout" />
 
+    <include layout="@layout/top_layout" />
+
     <com.lljy.custommediaplayer.view.controller.ShowControlView
         android:id="@+id/scl"
         android:layout_width="100dp"

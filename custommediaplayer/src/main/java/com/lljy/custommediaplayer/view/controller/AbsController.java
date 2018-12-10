@@ -924,6 +924,7 @@ public abstract class AbsController<T extends ControllerListener> extends Relati
         delayControlVisibility(GONE);
         dismissErrorLayout();
         showCover();
+        showPlayOrPauseIv();
     }
 
     /**

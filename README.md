@@ -1,10 +1,10 @@
-自定义视频播放器
+# 自定义视频播放器
 
 整合了乐视视频播放器（播放乐视sdk）、腾讯视频播放器（播放url）两种，支持播放视频格式：3gp,mp4,flv,m3u8，可自定义皮肤，可添加到android项目，自带离线缓存功能。
 
-### 使用说明
+## 使用说明
 
-##### 1.添加权限
+### 1.添加权限
 
 ```xml
 <uses-permission android:name="android.permission.INTERNET" /><!--必须-->
@@ -21,7 +21,7 @@
 <uses-permission android:name="android.permission.RECEIVE_USER_PRESENT"/>
 ```
 
-##### 2.添加乐视Service
+### 2.添加乐视Service
 
 ```xml
 <service
@@ -29,7 +29,7 @@
          android:process=":cmf" />
 ```
 
-##### 3.引入播放器库工程
+### 3.引入播放器库工程
 
 project/build.gradle
 
@@ -113,7 +113,7 @@ dependencies {
 
 
 
-##### 4.初始化信息（最好在Application.java的onCreate()方法初始化
+### 4.初始化信息（最好在Application.java的onCreate()方法初始化
 
 ```java
 public class AppConfig extends Application {
@@ -131,11 +131,11 @@ public class AppConfig extends Application {
 
 
 
-##### 5.播放
+### 5.播放
 
 ​	播放时，只要设置好资源，自动选择播放本地视频还是网络视频，会自动选择用那个播放引擎播放本地视频还是网络视频。
 
-**(1)列表设置资源**
+#### (1)列表设置资源
 
 图示：
 
@@ -210,7 +210,7 @@ videos.add(video3);
 mVideoView.setVideos(videos);
 ```
 
-**（2）单个视频**
+#### （2）单个视频
 
 图示：
 
@@ -250,25 +250,54 @@ videos.add(video3);
 mVideoView.setVideo(video2);//设置播放资源，并播放
 ```
 
-**(3)回调监听**
+### 6.回调监听
 
 ```java
 mVideoView.setListener(new IVideoListener() {
-            @Override
-            public void onStartFullScreen() {
 
+            /**
+             * 点击了打开或者退出全屏
+             *
+             * @param currentScreenStatus 当前屏幕状态
+             */
+            @Override
+            public void onStartOrExitFullScreenPressed(ScreenStatus currentScreenStatus) {
+                //在这里处理全屏、退出全屏操作
+//                if (currentScreenStatus == ScreenStatus.SCREEN_STATUS_FULL) {
+//                    //...退出全屏代码...
+//                    //执行完退出全屏代码记得给播放器设置当前屏幕为正常状态
+//                    mVideoView.setScreenStatus(ScreenStatus.SCREEN_STATUS_NORMAL);
+//                } else {
+//                    //...打开全屏代码...
+//                    //执行完打开全屏记得给播放器设置当前屏幕为全屏状态
+//                    mVideoView.setScreenStatus(ScreenStatus.SCREEN_STATUS_FULL);
+//                }
             }
 
+            /**
+             * 返回
+             *
+             * @param currentScreenStatus 当前屏幕状态
+             */
             @Override
-            public void onExitFullScreen() {
-
+            public void onTitleBackPressed(ScreenStatus currentScreenStatus) {
+                //点击了标题栏的返回按钮，执行的操作与点击手机返回按钮一样
+//                onBackPressed();
             }
 
+            /**
+             * 播放出错
+             *
+             * @param msg 错误信息
+             */
             @Override
             public void onError(String msg) {
 
             }
 
+            /**
+             * 播放完成
+             */
             @Override
             public void onComplete() {
 
@@ -278,7 +307,7 @@ mVideoView.setListener(new IVideoListener() {
 
 
 
-**(4)生命周期**
+### 7.生命周期
 
 ```java
 @Override
@@ -298,8 +327,19 @@ protected void onDestroy() {
     super.onDestroy();
     VideoManager.getInstance().cancelAllDownloads();//取消所有下载任务（这个在退出app调用即可，不用每个activity或者fragment都添加）
 }
+
+@Override
+public void onBackPressed() {
+	if (mVideoView.getScreenStatus() == ScreenStatus.SCREEN_STATUS_FULL) {
+    	//执行退出全屏操作
+        //退出全屏后设置屏幕状态为正常
+        mVideoView.setScreenStatus(ScreenStatus.SCREEN_STATUS_NORMAL);
+    } else {
+    	super.onBackPressed();
+    }
+}
 ```
 
-##### 6.引擎选择机制
+### 8.引擎选择机制
 
-​	设置的VideoEngineType来选择播放引擎和下载引擎，默认会设置引擎类型为VideoEngineType.TYPE_TENCENT，如需使用乐视播放器引擎播放和下载，需设置引擎类型为videoEntity.setVideoEngineType(VideoEngineType.TYPE_LETV)，播放器会根据设置的类型选择播放和下载类型。
+​	设置的VideoEngineType来选择播放引擎和下载引擎，默认会设置引擎类型为VideoEngineType.TYPE_ANDROID_MEDIA，如需使用乐视播放器引擎播放和下载，需设置引擎类型为videoEntity.setVideoEngineType(VideoEngineType.TYPE_LETV)，播放器会根据设置的类型选择播放和下载类型。VideoEngineType类型一共有三种：TYPE_ANDROID_MEDIA、TYPE_TENCENT和TYPE_LETV。

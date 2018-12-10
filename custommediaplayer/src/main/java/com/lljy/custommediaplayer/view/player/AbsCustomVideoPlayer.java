@@ -277,7 +277,7 @@ public abstract class AbsCustomVideoPlayer<T extends AbsController> extends Rela
                 }
             }
         } else {
-            initPlayer(mVideo);
+            setVideoSource(mVideo);
         }
     }
 

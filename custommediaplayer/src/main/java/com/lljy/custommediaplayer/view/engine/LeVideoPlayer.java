@@ -15,6 +15,7 @@ import com.lecloud.sdk.constant.PlayerParams;
 import com.lecloud.sdk.constant.StatusCode;
 import com.lecloud.sdk.videoview.VideoViewListener;
 import com.lecloud.sdk.videoview.vod.VodVideoView;
+import com.lljy.custommediaplayer.utils.VideoManager;
 import com.lljy.custommediaplayer.view.surfaceview.WrapContentSurfaceView;
 
 import java.lang.ref.WeakReference;
@@ -42,34 +43,38 @@ public class LeVideoPlayer extends AbsVideoPlayer implements VideoViewListener {
     private SurfaceHolder.Callback mSurfaceHolderCallback = new SurfaceHolder.Callback() {
         @Override
         public void surfaceCreated(SurfaceHolder holder) {
-            //初始化点播播放器
-            videoView = new VodVideoView(mContext);
-            videoView.setSurface(holder.getSurface());
-            //设置播放回调监听
-            videoView.setVideoViewListener(LeVideoPlayer.this);
-            //添加播放器
-            String nativeUrl = mVideo.getNativeUrl();
-            String netUrl = mVideo.getNetUrl();
-            String uu = mVideo.getUu();
-            String vu = mVideo.getVu();
-            if (!TextUtils.isEmpty(nativeUrl)) {
-                Log.d(TAG, "乐视播本地：" + nativeUrl);
-                videoView.setDataSource(nativeUrl);
-            } else if (!TextUtils.isEmpty(uu) && !TextUtils.isEmpty(vu)) {
-                Log.d(TAG, "乐视播网络uuid:" + uu + ",vuid:" + vu);
-                Bundle bundle = new Bundle();
-                bundle.putInt(PlayerParams.KEY_PLAY_MODE, PlayerParams.VALUE_PLAYER_VOD);
-                bundle.putString(PlayerParams.KEY_PLAY_UUID, uu);
-                bundle.putString(PlayerParams.KEY_PLAY_VUID, vu);
-                bundle.putString(PlayerParams.KEY_PLAY_PU, "0");
-                videoView.setDataSource(bundle);
-            } else if (!TextUtils.isEmpty(netUrl)) {
-                Log.d(TAG, "乐视播网络url:" + netUrl);
-                videoView.setDataSource(netUrl);
-            } else {
-                if (mListener != null) {
-                    mListener.onError("无可用播放地址");
+            try {
+                //初始化点播播放器
+                videoView = new VodVideoView(mContext);
+                videoView.setSurface(holder.getSurface());
+                //设置播放回调监听
+                videoView.setVideoViewListener(LeVideoPlayer.this);
+                //添加播放器
+                String nativeUrl = mVideo.getNativeUrl();
+                String netUrl = mVideo.getNetUrl();
+                String uu = mVideo.getUu();
+                String vu = mVideo.getVu();
+                if (!TextUtils.isEmpty(nativeUrl)) {
+                    Log.d(TAG, "乐视播本地：" + nativeUrl);
+                    videoView.setDataSource(nativeUrl);
+                } else if (!TextUtils.isEmpty(uu) && !TextUtils.isEmpty(vu)) {
+                    Log.d(TAG, "乐视播网络uuid:" + uu + ",vuid:" + vu);
+                    Bundle bundle = new Bundle();
+                    bundle.putInt(PlayerParams.KEY_PLAY_MODE, PlayerParams.VALUE_PLAYER_VOD);
+                    bundle.putString(PlayerParams.KEY_PLAY_UUID, uu);
+                    bundle.putString(PlayerParams.KEY_PLAY_VUID, vu);
+                    bundle.putString(PlayerParams.KEY_PLAY_PU, "0");
+                    videoView.setDataSource(bundle);
+                } else if (!TextUtils.isEmpty(netUrl)) {
+                    Log.d(TAG, "乐视播网络url:" + netUrl);
+                    videoView.setDataSource(netUrl);
+                } else {
+                    if (mListener != null) {
+                        mListener.onError("无可用播放地址");
+                    }
                 }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
 
@@ -152,17 +157,24 @@ public class LeVideoPlayer extends AbsVideoPlayer implements VideoViewListener {
             }
             //init handler
             mTimerHandler = new TimerHandler(this);
-            //init surface
-            mSurfaceView = new WrapContentSurfaceView(mContext);
-            SurfaceHolder surfaceHolder = mSurfaceView.getHolder();
-            surfaceHolder.addCallback(mSurfaceHolderCallback);
-            //add surface
-            LayoutParams params = new LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.MATCH_PARENT
-            );
-            params.addRule(CENTER_IN_PARENT);
-            addView(mSurfaceView, params);
+            if (VideoManager.getInstance().isCdeInitSuccess()) {
+                //init surface
+                mSurfaceView = new WrapContentSurfaceView(mContext);
+                SurfaceHolder surfaceHolder = mSurfaceView.getHolder();
+                surfaceHolder.addCallback(mSurfaceHolderCallback);
+                //add surface
+                LayoutParams params = new LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT
+                );
+                params.addRule(CENTER_IN_PARENT);
+                addView(mSurfaceView, params);
+            } else {
+                mTimerHandler.postDelayed(() -> {
+                    Log.d(TAG, "等待cde初始化完成，开始播放");
+                    initPlayer();
+                }, 1000);
+            }
         } catch (Exception e) {
             e.printStackTrace();
             if (mListener != null) {

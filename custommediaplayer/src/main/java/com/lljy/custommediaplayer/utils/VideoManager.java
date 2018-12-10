@@ -137,6 +137,10 @@ public class VideoManager {
         }
     }
 
+    public boolean isCdeInitSuccess() {
+        return cdeInitSuccess;
+    }
+
     /**
      * 获取当前进程名字
      *

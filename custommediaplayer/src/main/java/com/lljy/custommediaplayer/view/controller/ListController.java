@@ -271,9 +271,6 @@ public class ListController extends AbsController<ListControllerListener> {
                             if (i < mAdapter.getData().size() - 1) {
                                 mListener.onVideoSelected(mAdapter.getData().get(i + 1));
                                 setPlay(i + 1);
-                            } else {
-                                showCover();
-                                showPlayOrPauseIv();
                             }
                             break;
                         }
