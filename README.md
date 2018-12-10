@@ -204,7 +204,6 @@ video3.setVu("9f1a891f09");
 video3.setVideoEngineType(VideoEngineType.TYPE_LETV);
 video3.setCoverUrl("http://tanzi27niu.cdsb.mobi/wps/wp-content/uploads/2017/05/2017-05-10_10-09-58.jpg");
 video3.setVideoName("Linux系统讲解");
-video3.setVideoEngineType(VideoEngineType.TYPE_LETV);
 videos.add(video3);
 //设置播放列表
 mVideoView.setVideos(videos);
@@ -245,8 +244,6 @@ video3.setVu("9f1a891f09");
 video3.setVideoEngineType(VideoEngineType.TYPE_LETV);
 video3.setCoverUrl("http://tanzi27niu.cdsb.mobi/wps/wp-content/uploads/2017/05/2017-05-10_10-09-58.jpg");
 video3.setVideoName("Linux系统讲解");
-video3.setVideoEngineType(VideoEngineType.TYPE_LETV);
-videos.add(video3);
 mVideoView.setVideo(video2);//设置播放资源，并播放
 ```
 
