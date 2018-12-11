@@ -9,6 +9,7 @@ package com.lljy.custommediaplayer.constants;
 
 public final class VideoStatus {
     /*播放状态*/
+    public static final int MEDIA_STATE_CHECK_NOT_WIFI = 9;//检测当前不是wifi
     public static final int MEDIA_STATE_RELEASE = 10;//释放状态
     public static final int MEDIA_STATE_RESUME = 11;//恢复播放（对应暂停）
     public static final int MEDIA_STATE_PAUSE = 12;//暂停播放

@@ -97,11 +97,19 @@ public class SimpleVideoPlayer extends AbsCustomVideoPlayer<SimpleController> im
     }
 
     /**
+     * 点击了继续播放
+     */
+    @Override
+    public void onContinueClick() {
+        super.continuePlay();
+    }
+
+    /**
      * 设置视频播放资源
      *
      * @param videoEntity 视频
      */
     public void setVideo(VideoEntity videoEntity) {
-        setVideoSource(videoEntity);
+        super.setVideoSource(videoEntity);
     }
 }

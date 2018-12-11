@@ -44,6 +44,7 @@ public class LeVideoPlayer extends AbsVideoPlayer implements VideoViewListener {
         @Override
         public void surfaceCreated(SurfaceHolder holder) {
             try {
+                Log.d(TAG, "surfaceCreated");
                 //初始化点播播放器
                 videoView = new VodVideoView(mContext);
                 videoView.setSurface(holder.getSurface());

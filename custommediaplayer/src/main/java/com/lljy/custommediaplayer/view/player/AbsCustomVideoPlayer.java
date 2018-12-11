@@ -3,7 +3,8 @@ package com.lljy.custommediaplayer.view.player;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Color;
-import android.os.Build;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.AttributeSet;
@@ -226,6 +227,10 @@ public abstract class AbsCustomVideoPlayer<T extends AbsController> extends Rela
                     VideoDownloadManager.getInstance().addDownloadVideo(mVideo);
                 }
             }
+            if (TextUtils.isEmpty(nativeUrl) && VideoManager.getInstance().isEnableWifiCheck() && mController != null && !isWifiConnected(mContext)) {
+                mController.setVideoState(VideoStatus.MEDIA_STATE_CHECK_NOT_WIFI);
+                return;
+            }
             mVideo.setNativeUrl(nativeUrl);
             LayoutParams params = new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
             params.addRule(CENTER_IN_PARENT);
@@ -236,6 +241,18 @@ public abstract class AbsCustomVideoPlayer<T extends AbsController> extends Rela
             e.printStackTrace();
             onError("初始化出错");
         }
+    }
+
+    /**
+     * This method requires the caller to hold the permission ACCESS_NETWORK_STATE.
+     *
+     * @param context context
+     * @return if wifi is connected,return true
+     */
+    public static boolean isWifiConnected(Context context) {
+        ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+        return networkInfo != null && networkInfo.getType() == ConnectivityManager.TYPE_WIFI;
     }
 
     /**
@@ -323,9 +340,6 @@ public abstract class AbsCustomVideoPlayer<T extends AbsController> extends Rela
             }
             if (mController != null) {
                 mController.setVideoState(VideoStatus.MEDIA_STATE_START_PLAY);
-            }
-            if (mListener != null) {
-                mListener.onPlayStart(mVideo != null && TextUtils.isEmpty(mVideo.getNativeUrl()));
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -461,6 +475,13 @@ public abstract class AbsCustomVideoPlayer<T extends AbsController> extends Rela
      * 重试
      */
     protected void reload() {
+        setVideoSource(mVideo);
+    }
+
+    /**
+     * 继续播放
+     */
+    protected void continuePlay() {
         setVideoSource(mVideo);
     }
 

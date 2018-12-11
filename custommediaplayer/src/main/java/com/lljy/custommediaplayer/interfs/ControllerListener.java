@@ -56,4 +56,9 @@ public interface ControllerListener {
      * 点击了重新加载
      */
     void onReloadClick();
+
+    /**
+     * 点击了继续播放
+     */
+    void onContinueClick();
 }

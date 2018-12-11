@@ -51,4 +51,6 @@
         android:layout_width="100dp"
         android:layout_height="100dp"
         android:layout_centerInParent="true"></com.lljy.custommediaplayer.view.controller.ShowControlView>
+
+    <include layout="@layout/video_wifi_layout" />
 </RelativeLayout>

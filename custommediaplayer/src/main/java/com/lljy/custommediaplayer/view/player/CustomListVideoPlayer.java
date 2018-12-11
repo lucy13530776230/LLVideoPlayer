@@ -193,4 +193,12 @@ public class CustomListVideoPlayer extends AbsCustomVideoPlayer<ListController> 
     public void onReloadClick() {
         super.reload();
     }
+
+    /**
+     * 点击了继续播放
+     */
+    @Override
+    public void onContinueClick() {
+        super.continuePlay();
+    }
 }

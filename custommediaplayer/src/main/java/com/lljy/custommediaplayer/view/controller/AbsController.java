@@ -23,6 +23,7 @@ import com.lljy.custommediaplayer.constants.VideoStatus;
 import com.lljy.custommediaplayer.gesture.ControllerSimpleGestureListener;
 import com.lljy.custommediaplayer.gesture.GestureResultListener;
 import com.lljy.custommediaplayer.interfs.ControllerListener;
+import com.lljy.custommediaplayer.utils.VideoManager;
 import com.lljy.custommediaplayer.utils.VideoTimeUtils;
 
 import java.lang.ref.WeakReference;
@@ -88,13 +89,16 @@ public abstract class AbsController<T extends ControllerListener> extends Relati
     protected Handler mHandler;
     protected static final long delayHideMillis = 2000;
 
-    protected boolean isControlVisible = false;
+    protected boolean isControlVisible = false;//控制布局是否可见
 
-    protected LinearLayout mTopLl;
-    protected RelativeLayout mBackRl;
-    protected TextView mTitleTv;
+    protected LinearLayout mTopLl;//顶部父布局
+    protected RelativeLayout mBackRl;//返回不
+    protected TextView mTitleTv;//标题
 
-    protected TextView mReloadTv;
+    protected TextView mReloadTv;//重新加载按钮
+
+    protected RelativeLayout mWifiRl;//不是wifi的布局
+    protected TextView mContinueTv;//继续播放按钮
 
     protected boolean mNeedTopTitleAndBackLayout;//是否需要顶部布局
     protected boolean mNeedBackButtonOnNormalStatus;//是否在正常屏幕状态下需要返回按钮
@@ -226,6 +230,19 @@ public abstract class AbsController<T extends ControllerListener> extends Relati
             //全屏按钮
             mFullScreenIv = contentView.findViewById(R.id.full_screen_iv);
             mFullScreenIv.setOnClickListener(v -> startOrExitFullScreen());
+
+            //wifi
+            mWifiRl = contentView.findViewById(R.id.wifi_rl);
+            mContinueTv = contentView.findViewById(R.id.continue_tv);
+            if (mContinueTv != null) {
+                mContinueTv.setOnClickListener(v -> {
+                    if (mListener != null) {
+                        VideoManager.getInstance().enableWifiCheck(false);
+                        dismissNotWifiLayout();
+                        mListener.onContinueClick();
+                    }
+                });
+            }
 
             initExtensionViews(contentView, context);
         } catch (Exception e) {
@@ -463,6 +480,9 @@ public abstract class AbsController<T extends ControllerListener> extends Relati
     public void setVideoState(int state, Bundle params) {
         try {
             switch (state) {
+                case VideoStatus.MEDIA_STATE_CHECK_NOT_WIFI:
+                    onCheckNotWifi();
+                    break;
                 case VideoStatus.MEDIA_STATE_RELEASE:
                     onReleaseHandle();
                     break;
@@ -825,8 +845,32 @@ public abstract class AbsController<T extends ControllerListener> extends Relati
         }
     }
 
+    /**
+     * 显示当前不是wifi布局
+     */
+    protected void showNotWifiLayout() {
+        if (mWifiRl != null && mWifiRl.getVisibility() != VISIBLE) {
+            mWifiRl.setVisibility(VISIBLE);
+        }
+    }
+
+    /**
+     * 隐藏当前不是wifi布局
+     */
+    protected void dismissNotWifiLayout() {
+        if (mWifiRl != null && mWifiRl.getVisibility() != GONE) {
+            mWifiRl.setVisibility(GONE);
+        }
+    }
+
     /*******处理视频实时信息*******/
 
+    /**
+     * 检测当前不是wifi状态
+     */
+    protected void onCheckNotWifi() {
+        showNotWifiLayout();
+    }
 
     /**
      * 释放视频的处理

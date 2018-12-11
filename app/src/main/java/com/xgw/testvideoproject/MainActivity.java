@@ -72,25 +72,6 @@ public class MainActivity extends AppCompatActivity {
             }
 
             /**
-             * 开始播放
-             *
-             * @param isPlayNetwork 是否是播放网络资源
-             */
-            @Override
-            public void onPlayStart(boolean isPlayNetwork) {
-                if (isPlayNetwork) {
-                    //播放的是网络视频资源，检测是否是wifi环境，如果不是，暂停提示用户非wifi环境
-                    if (mVideoView != null) {
-                        mVideoView.onPause();
-                    }
-                    //弹框提示非wifi环境，用选择继续播放
-                    if (mVideoView != null) {
-                        mVideoView.onResume();
-                    }
-                }
-            }
-
-            /**
              * 播放出错
              *
              * @param msg 错误信息

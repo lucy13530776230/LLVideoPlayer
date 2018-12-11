@@ -27,6 +27,7 @@ public class VideoManager {
     private Application app;
     private boolean cdeInitSuccess;
     private boolean mEnableDownloadEngine = true;
+    private boolean mEnableWifiCheck = false;
 
     public static VideoManager getInstance() {
         if (instance == null) {
@@ -65,6 +66,15 @@ public class VideoManager {
 
     public boolean isEnableDownloadEngine() {
         return mEnableDownloadEngine;
+    }
+
+    public VideoManager enableWifiCheck(boolean enable) {
+        mEnableWifiCheck = enable;
+        return this;
+    }
+
+    public boolean isEnableWifiCheck() {
+        return mEnableWifiCheck;
     }
 
     /**
