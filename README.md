@@ -29,30 +29,16 @@
          android:process=":cmf" />
 ```
 
-### 3.引入播放器库工程
+### 3.引入
+
+#### 方式一：需要导入播放器库工程
 
 project/build.gradle
 
 ```groovy
-buildscript {
-    
-    repositories {
-        google()
-        jcenter()
-    }
-    dependencies {
-        classpath 'com.android.tools.build:gradle:3.2.1'
-        
-
-        // NOTE: Do not place your application dependencies here; they belong
-        // in the individual module build.gradle files
-    }
-}
-
 allprojects {
     repositories {
-        google()
-        jcenter()
+        ...
         maven { url 'https://jitpack.io' }
         //下载仓库
         maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
@@ -64,15 +50,9 @@ app/build.gradle
 
 ```groovy
 android {
-    compileSdkVersion 28
+    ...
     defaultConfig {
-        applicationId "xxx"
-        minSdkVersion 15
-        targetSdkVersion 28
-        versionCode 1
-        versionName "1.0"
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
-        multiDexEnabled true
+        ...
         ndk {
             abiFilters "armeabi", "armeabi-v7a"
         }
@@ -99,15 +79,61 @@ repositories {
 }
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
-    //design
-    implementation 'com.android.support:appcompat-v7:28.0.0'
-    implementation 'com.android.support.constraint:constraint-layout:1.1.3'
-    //test
-    testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'com.android.support.test:runner:1.0.2'
-    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+    ...
     implementation project(':custommediaplayer')
+}
+```
+
+#### 方式二：不需要导入，implementation从jitpack引入即可
+
+project/build.gradle
+
+```groovy
+allprojects {
+	repositories {
+		...
+		maven { url 'https://jitpack.io' }
+        //下载仓库
+        maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+	}
+}
+```
+
+app/build.gradle
+
+```groovy
+android {
+    ...
+    defaultConfig {
+        ...
+        ndk {
+            abiFilters "armeabi", "armeabi-v7a"
+        }
+    }
+
+
+
+    sourceSets {
+        main {
+            jniLibs.srcDirs = ['libs']
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+repositories {
+    flatDir {
+        dirs project(':custommediaplayer').file('libs')
+        dirs project(':LePlayerSdk').file('libs')
+    }
+}
+
+dependencies {
+    ...
+    implementation 'com.github.lucy13530776230.LLVideoPlayer:custommediaplayer:v1.0.0'
 }
 ```
 
@@ -120,11 +146,15 @@ public class AppConfig extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+       
         VideoManager.getInstance()
-                .initApp(this)//初始化全局Application
-            	.enableDownloadEngine(true)//默认就是true，不设置为true，播放时播放网络资源，并且不会下载
-                .setVideoExpireDays(1)//初始化视频过期时间
-                .setVideoSavedPath(Environment.getExternalStorageDirectory().getPath() + 	                                                    File.separator + "llplayer" + File.separator);//设置视频缓存目录
+                .initApp(this)//初始化app上下文给播放器
+                .setVideoExpireDays(1)//设置下载的离线文件超时时间，不设置默认30天会清理下载文件
+                .enableDownloadEngine(false)//默认就是true
+                .enableWifiCheck(true)//是否开启wifi检测
+                .setVideoSavedPath(
+                        Environment.getExternalStorageDirectory().getPath()
+                                + File.separator + "llplayer" + File.separator);//设置播放地址，默认在该目录下
     }
 }
 ```
@@ -139,7 +169,7 @@ public class AppConfig extends Application {
 
 图示：
 
-![](http://git.cke123.com/XieGuangwei/CustomVideoPlayer/raw/master/screenshot/list_cap.png)
+![](https://github.com/lucy13530776230/LLVideoPlayer/blob/master/screenshot/list_cap.png?raw=true)
 
 xml
 
@@ -251,7 +281,13 @@ mVideoView.setVideo(video2);//设置播放资源，并播放
 
 图示：
 
-![](http://git.cke123.com/XieGuangwei/CustomVideoPlayer/raw/master/screenshot/error.png)
+![](https://github.com/lucy13530776230/LLVideoPlayer/blob/master/screenshot/error.png?raw=true)
+
+（4）当前网络不是wifi
+
+需要在初始化设置enableWifiCheck(true)才会检测该项，效果图如下：
+
+![](https://github.com/lucy13530776230/LLVideoPlayer/blob/master/screenshot/wifi.png?raw=true)
 
 ### 6.回调监听（回调监听注册一定要加载mVideoView.setController之前）
 
@@ -324,31 +360,6 @@ mVideoView.setListener(new IVideoListener() {
 ### 7.权限检测
 
 使用播放器播放之前可以进行权限检测，检测完成后开始播放，没sd卡读写权限可能播放本地视频出错。
-
-### 8.检测网络
-
-可以在播放开始回调方法检测当前网络环境，如果不是wifi，可以暂停播放，弹框提示用户。
-
-```java
-/**
-* 开始播放
-*
-* @param isPlayNetwork 是否是播放网络资源
-*/
-@Override
-public void onPlayStart(boolean isPlayNetwork) {
-	if (isPlayNetwork) {
-    	//播放的是网络视频资源，检测是否是wifi环境，如果不是，暂停提示用户非wifi环境
-    	if (mVideoView != null) {
-        	mVideoView.onPause();
-    	}
-    	//弹框提示非wifi环境，用选择继续播放
-    	if (mVideoView != null) {
-        	mVideoView.onResume();
-    	}
-	}
-}
-```
 
 
 
