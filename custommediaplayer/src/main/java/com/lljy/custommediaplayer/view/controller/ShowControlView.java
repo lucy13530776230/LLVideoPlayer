@@ -9,6 +9,8 @@ import android.widget.TextView;
 
 import com.lljy.custommediaplayer.R;
 
+import java.lang.ref.WeakReference;
+
 
 /**
  * Created by XieGuangwei on 2018/1/4.
@@ -34,7 +36,7 @@ public class ShowControlView extends RelativeLayout {
         View contentView = LayoutInflater.from(context).inflate(R.layout.show_control_layout, this, true);
         titleTv = contentView.findViewById(R.id.title_tv);
         valueTv = contentView.findViewById(R.id.value_tv);
-        mHideRunnable = new HideRunnable();
+        mHideRunnable = new HideRunnable(this);
         setVisibility(GONE);
     }
 
@@ -46,17 +48,28 @@ public class ShowControlView extends RelativeLayout {
         postDelayed(mHideRunnable, duration);
     }
 
-    public void setDuration(int duration) {
-        this.duration = duration;
+    public void release() {
+        if (mHideRunnable != null) {
+            removeCallbacks(mHideRunnable);
+            setVisibility(GONE);
+        }
     }
 
 
     //隐藏自己的Runnable
-    private class HideRunnable implements Runnable {
+    private static class HideRunnable implements Runnable {
+        private WeakReference<ShowControlView> ref;
+
+        public HideRunnable(ShowControlView showControlView) {
+            this.ref = new WeakReference<>(showControlView);
+        }
+
         @Override
         public void run() {
-            setVisibility(GONE);
-            ShowControlView.this.removeCallbacks(mHideRunnable);
+            if (ref != null && ref.get() != null) {
+                ref.get().setVisibility(GONE);
+                ref.get().removeCallbacks(this);
+            }
         }
     }
 }

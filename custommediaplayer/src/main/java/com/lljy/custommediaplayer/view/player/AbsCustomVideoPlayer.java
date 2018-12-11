@@ -3,6 +3,7 @@ package com.lljy.custommediaplayer.view.player;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.AttributeSet;
@@ -105,21 +106,25 @@ public abstract class AbsCustomVideoPlayer<T extends AbsController> extends Rela
      * @param controller 控制器
      */
     public void setController(T controller) {
-        this.mController = controller;
-        addView(mController);
-        if (mController != null) {
-            mController.setNeedTouchControlProgress(mNeedTouchControlProgress);
-            mController.setNeedTouchControlVol(mNeedTouchControlVol);
-            mController.setNeedStartOrExitFullScreenButton(mNeedStartOrExitFullScreenButton);
-            mController.setNeedTopTitleAndBackLayout(mNeedTopTitleAndBackLayout);
-            mController.setNeedBackButtonOnNormalScreenStatus(mNeedBackButtonOnNormalScreenStatus);
-            mController.setNeedBackButtonOnFullScreenStatus(mNeedBackButtonOnFullScreenStatus);
-            mController.setNeedTitle(mNeedTitle);
-            mController.setNeedReloadButton(mNeedReloadButton);
-            //初始化屏幕状态
-            setScreenStatus(ScreenStatus.SCREEN_STATUS_NORMAL);
+        try {
+            this.mController = controller;
+            addView(mController);
+            if (mController != null) {
+                mController.setNeedTouchControlProgress(mNeedTouchControlProgress);
+                mController.setNeedTouchControlVol(mNeedTouchControlVol);
+                mController.setNeedStartOrExitFullScreenButton(mNeedStartOrExitFullScreenButton);
+                mController.setNeedTopTitleAndBackLayout(mNeedTopTitleAndBackLayout);
+                mController.setNeedBackButtonOnNormalScreenStatus(mNeedBackButtonOnNormalScreenStatus);
+                mController.setNeedBackButtonOnFullScreenStatus(mNeedBackButtonOnFullScreenStatus);
+                mController.setNeedTitle(mNeedTitle);
+                mController.setNeedReloadButton(mNeedReloadButton);
+                //初始化屏幕状态
+                setScreenStatus(ScreenStatus.SCREEN_STATUS_NORMAL);
+            }
+            setControllerListener(controller);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        setControllerListener(controller);
     }
 
     /**
@@ -135,103 +140,120 @@ public abstract class AbsCustomVideoPlayer<T extends AbsController> extends Rela
      * @param context
      */
     private void init(Context context, AttributeSet attrs) {
-        TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.AbsCustomVideoPlayer);
-        mNeedTouchControlProgress = typedArray.getBoolean(R.styleable.AbsCustomVideoPlayer_needTouchControlProgress, true);//是否需要手指滑动控制进度，默认true
-        mNeedTouchControlVol = typedArray.getBoolean(R.styleable.AbsCustomVideoPlayer_needTouchControlVol, true);//是否需要手指滑动控制音量，默认true
-        mNeedStartOrExitFullScreenButton = typedArray.getBoolean(R.styleable.AbsCustomVideoPlayer_needStartOrExitFullScreenButton, true);//是否需要全屏/退出全屏按钮，默认true
-        mNeedTopTitleAndBackLayout = typedArray.getBoolean(R.styleable.AbsCustomVideoPlayer_needTopTitleAndBackLayout, true);//是否需要顶部布局，默认true
-        mNeedBackButtonOnNormalScreenStatus = typedArray.getBoolean(R.styleable.AbsCustomVideoPlayer_needBackButtonOnNormalScreenStatus, false);//是否需要在正常屏幕状态下显示返回按钮，默认false
-        mNeedBackButtonOnFullScreenStatus = typedArray.getBoolean(R.styleable.AbsCustomVideoPlayer_needBackButtonOnFullScreenStatus, true);//是否需要在全屏模式下显示返回按钮，默认true
-        mNeedTitle = typedArray.getBoolean(R.styleable.AbsCustomVideoPlayer_needTitle, true);//是否需要标题，默认true
-        mNeedReloadButton = typedArray.getBoolean(R.styleable.AbsCustomVideoPlayer_needReloadButton, true);//是否需要重试按钮，默认true
-        typedArray.recycle();
-        mCurrentProgress = 0;
-        setBackgroundColor(Color.BLACK);
-        mContext = context;
-        mIsFirstEnter = true;
+        try {
+            TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.AbsCustomVideoPlayer);
+            mNeedTouchControlProgress = typedArray.getBoolean(R.styleable.AbsCustomVideoPlayer_needTouchControlProgress, true);//是否需要手指滑动控制进度，默认true
+            mNeedTouchControlVol = typedArray.getBoolean(R.styleable.AbsCustomVideoPlayer_needTouchControlVol, true);//是否需要手指滑动控制音量，默认true
+            mNeedStartOrExitFullScreenButton = typedArray.getBoolean(R.styleable.AbsCustomVideoPlayer_needStartOrExitFullScreenButton, true);//是否需要全屏/退出全屏按钮，默认true
+            mNeedTopTitleAndBackLayout = typedArray.getBoolean(R.styleable.AbsCustomVideoPlayer_needTopTitleAndBackLayout, true);//是否需要顶部布局，默认true
+            mNeedBackButtonOnNormalScreenStatus = typedArray.getBoolean(R.styleable.AbsCustomVideoPlayer_needBackButtonOnNormalScreenStatus, false);//是否需要在正常屏幕状态下显示返回按钮，默认false
+            mNeedBackButtonOnFullScreenStatus = typedArray.getBoolean(R.styleable.AbsCustomVideoPlayer_needBackButtonOnFullScreenStatus, true);//是否需要在全屏模式下显示返回按钮，默认true
+            mNeedTitle = typedArray.getBoolean(R.styleable.AbsCustomVideoPlayer_needTitle, true);//是否需要标题，默认true
+            mNeedReloadButton = typedArray.getBoolean(R.styleable.AbsCustomVideoPlayer_needReloadButton, true);//是否需要重试按钮，默认true
+            typedArray.recycle();
+            mCurrentProgress = 0;
+            setBackgroundColor(Color.BLACK);
+            mContext = context;
+            mIsFirstEnter = true;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     protected void setVideoSource(VideoEntity videoEntity) {
-        mCurrentProgress = 0;
-        if (mController != null) {
-            Bundle params = new Bundle();
-            if (videoEntity != null) {
-                String cover = videoEntity.getCoverUrl();
-                params.putString(VideoStatus.Constants.PLAY_COVER_URL, cover);
-                params.putString(VideoStatus.Constants.PLAY_TITLE, videoEntity.getVideoName());
+        try {
+            mCurrentProgress = 0;
+            if (mController != null) {
+                Bundle params = new Bundle();
+                if (videoEntity != null) {
+                    String cover = videoEntity.getCoverUrl();
+                    params.putString(VideoStatus.Constants.PLAY_COVER_URL, cover);
+                    params.putString(VideoStatus.Constants.PLAY_TITLE, videoEntity.getVideoName());
+                }
+                mController.setVideoState(VideoStatus.MEDIA_STATE_PLAY_NEW, params);
             }
-            mController.setVideoState(VideoStatus.MEDIA_STATE_PLAY_NEW, params);
+            if (videoEntity != null) {
+                this.mVideo = videoEntity.clone();
+            } else {
+                mVideo = null;
+            }
+            initPlayer();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        if (videoEntity != null) {
-            this.mVideo = videoEntity.clone();
-        } else {
-            mVideo = null;
-        }
-        initPlayer(mVideo);
     }
 
     /**
      * 初始化播放器
      */
-    private void initPlayer(VideoEntity videoEntity) {
-        release();
-        if (videoEntity == null || TextUtils.isEmpty(videoEntity.getId()) || TextUtils.isEmpty(videoEntity.getVideoEngineType())) {
-            onError("该视频资源未找到");
-            return;
-        }
-        String uuid = videoEntity.getUu();
-        String vuid = videoEntity.getVu();
-        String engineType = videoEntity.getVideoEngineType();
-        String uniqueKey;
-        if (VideoEngineType.TYPE_ANDROID_MEDIA.equals(engineType)) {
-            //原生播放器
-            uniqueKey = videoEntity.getVideoEngineType() + videoEntity.getId();
-            mPlayer = new AndroidMediaPlayer(mContext);
-            Log.d(TAG, "使用原生视频播放引擎");
-        } else if (VideoEngineType.TYPE_TENCENT.equals(engineType)) {
-            //腾讯播放器
-            uniqueKey = videoEntity.getVideoEngineType() + videoEntity.getId();
-            mPlayer = new TencentVideoPlayer(mContext);
-            Log.d(TAG, "使用腾讯视频播放引擎");
-        } else if (VideoEngineType.TYPE_LETV.equals(engineType)) {
-            //乐视播放器
-            uniqueKey = uuid + vuid;
-            mPlayer = new LeVideoPlayer(mContext);
-            Log.d(TAG, "使用乐视视频播放引擎");
-        } else {
-            onError("该视频资源未找到");
-            return;
-        }
-        String nativeUrl = null;
-        if (VideoManager.getInstance().isEnableDownloadEngine()) {
-            nativeUrl = VideoDownloadManager.getInstance().getNativeUrl(uniqueKey);
-            if (!VideoDownloadManager.getInstance().isVideoExits(uniqueKey)) {
-                nativeUrl = null;
+    private void initPlayer() {
+        try {
+            release();
+            if (mVideo == null || TextUtils.isEmpty(mVideo.getId()) || TextUtils.isEmpty(mVideo.getVideoEngineType())) {
+                onError("该视频资源未找到");
+                return;
             }
-            if (TextUtils.isEmpty(nativeUrl)) {
-                VideoDownloadManager.getInstance().addDownloadVideo(videoEntity);
+            String uuid = mVideo.getUu();
+            String vuid = mVideo.getVu();
+            String engineType = mVideo.getVideoEngineType();
+            String uniqueKey;
+            if (VideoEngineType.TYPE_ANDROID_MEDIA.equals(engineType)) {
+                //原生播放器
+                uniqueKey = mVideo.getVideoEngineType() + mVideo.getId();
+                mPlayer = new AndroidMediaPlayer(mContext);
+                Log.d(TAG, "使用原生视频播放引擎");
+            } else if (VideoEngineType.TYPE_TENCENT.equals(engineType)) {
+                //腾讯播放器
+                uniqueKey = mVideo.getVideoEngineType() + mVideo.getId();
+                mPlayer = new TencentVideoPlayer(mContext);
+                Log.d(TAG, "使用腾讯视频播放引擎");
+            } else if (VideoEngineType.TYPE_LETV.equals(engineType)) {
+                //乐视播放器
+                uniqueKey = uuid + vuid;
+                mPlayer = new LeVideoPlayer(mContext);
+                Log.d(TAG, "使用乐视视频播放引擎");
+            } else {
+                onError("该视频资源未找到");
+                return;
             }
+            String nativeUrl = null;
+            if (VideoManager.getInstance().isEnableDownloadEngine()) {
+                nativeUrl = VideoDownloadManager.getInstance().getNativeUrl(uniqueKey);
+                if (!VideoDownloadManager.getInstance().isVideoExits(uniqueKey)) {
+                    nativeUrl = null;
+                }
+                if (TextUtils.isEmpty(nativeUrl)) {
+                    VideoDownloadManager.getInstance().addDownloadVideo(mVideo);
+                }
+            }
+            mVideo.setNativeUrl(nativeUrl);
+            LayoutParams params = new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+            params.addRule(CENTER_IN_PARENT);
+            addView(mPlayer, 0, params);
+            mPlayer.setListener(this);
+            mPlayer.setVideoSource(mVideo);
+        } catch (Exception e) {
+            e.printStackTrace();
+            onError("初始化出错");
         }
-        mVideo.setNativeUrl(nativeUrl);
-        LayoutParams params = new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-        params.addRule(CENTER_IN_PARENT);
-        addView(mPlayer, 0, params);
-        mPlayer.setListener(this);
-        mPlayer.setVideoSource(videoEntity);
     }
 
     /**
      * 释放播放器
      */
     private void release() {
-        if (mPlayer != null) {
-            mPlayer.release();
-            mPlayer.setListener(null);
-            removeView(mPlayer);
-            mPlayer = null;
-        }
-        if (mController != null) {
-            mController.setVideoState(VideoStatus.MEDIA_STATE_RELEASE);
+        try {
+            if (mPlayer != null) {
+                mPlayer.release();
+                mPlayer.setListener(null);
+                removeView(mPlayer);
+                mPlayer = null;
+            }
+            if (mController != null) {
+                mController.setVideoState(VideoStatus.MEDIA_STATE_RELEASE);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -258,8 +280,12 @@ public abstract class AbsCustomVideoPlayer<T extends AbsController> extends Rela
      * @param progress
      */
     public void seekTo(int progress) {
-        if (mPlayer != null) {
-            mPlayer.seekTo(progress);
+        try {
+            if (mPlayer != null) {
+                mPlayer.seekTo(progress);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -268,40 +294,55 @@ public abstract class AbsCustomVideoPlayer<T extends AbsController> extends Rela
      * 开始播放/暂停
      */
     public void playOrPause() {
-        if (mPlayer != null) {
-            if (mPlayer.isPlaying()) {
-                mPlayer.pause();
-                if (mController != null) {
-                    mController.setVideoState(VideoStatus.MEDIA_STATE_PAUSE);
+        try {
+            if (mPlayer != null) {
+                if (mPlayer.isPlaying()) {
+                    mPlayer.pause();
+                    if (mController != null) {
+                        mController.setVideoState(VideoStatus.MEDIA_STATE_PAUSE);
+                    }
+                } else {
+                    mPlayer.play();
+                    if (mController != null) {
+                        mController.setVideoState(VideoStatus.MEDIA_STATE_RESUME);
+                    }
                 }
             } else {
-                mPlayer.play();
-                if (mController != null) {
-                    mController.setVideoState(VideoStatus.MEDIA_STATE_RESUME);
-                }
+                setVideoSource(mVideo);
             }
-        } else {
-            setVideoSource(mVideo);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
     @Override
     public void onPrepared() {
-        if (mCurrentProgress > 0) {
-            seekTo(mCurrentProgress);
-        }
-        if (mController != null) {
-            mController.setVideoState(VideoStatus.MEDIA_STATE_START_PLAY);
+        try {
+            if (mCurrentProgress > 0) {
+                seekTo(mCurrentProgress);
+            }
+            if (mController != null) {
+                mController.setVideoState(VideoStatus.MEDIA_STATE_START_PLAY);
+            }
+            if (mListener != null) {
+                mListener.onPlayStart(mVideo != null && TextUtils.isEmpty(mVideo.getNativeUrl()));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
     @Override
     public void onProgress(int progress) {
-        this.mCurrentProgress = progress;
-        if (mController != null) {
-            Bundle bundle = new Bundle();
-            bundle.putInt(VideoStatus.Constants.PLAY_PROGRESS, progress);
-            mController.setVideoState(VideoStatus.MEDIA_STATE_PLAY_PROGRESS, bundle);
+        try {
+            this.mCurrentProgress = progress;
+            if (mController != null) {
+                Bundle bundle = new Bundle();
+                bundle.putInt(VideoStatus.Constants.PLAY_PROGRESS, progress);
+                mController.setVideoState(VideoStatus.MEDIA_STATE_PLAY_PROGRESS, bundle);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 

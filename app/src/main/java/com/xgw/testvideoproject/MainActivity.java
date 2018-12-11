@@ -38,6 +38,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         mVideoView = findViewById(R.id.video_view);
+
         mVideoView.setListener(new IVideoListener() {
 
             /**
@@ -68,6 +69,25 @@ public class MainActivity extends AppCompatActivity {
             public void onTitleBackPressed(ScreenStatus currentScreenStatus) {
                 //点击了标题栏的返回按钮，执行的操作与点击手机返回按钮一样
 //                onBackPressed();
+            }
+
+            /**
+             * 开始播放
+             *
+             * @param isPlayNetwork 是否是播放网络资源
+             */
+            @Override
+            public void onPlayStart(boolean isPlayNetwork) {
+                if (isPlayNetwork) {
+                    //播放的是网络视频资源，检测是否是wifi环境，如果不是，暂停提示用户非wifi环境
+                    if (mVideoView != null) {
+                        mVideoView.onPause();
+                    }
+                    //弹框提示非wifi环境，用选择继续播放
+                    if (mVideoView != null) {
+                        mVideoView.onResume();
+                    }
+                }
             }
 
             /**
@@ -139,7 +159,7 @@ public class MainActivity extends AppCompatActivity {
         videoNames[1] = "腾讯sdk下载载视频2";
         videoNames[2] = "乐视sdk下载载视频2";
 
-        mVideoView.setVideo(null);
+        mVideoView.setVideo(video3);
     }
 
     @Override

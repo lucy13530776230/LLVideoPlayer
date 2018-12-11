@@ -321,9 +321,38 @@ mVideoView.setListener(new IVideoListener() {
         });
 ```
 
+### 7.权限检测
+
+使用播放器播放之前可以进行权限检测，检测完成后开始播放，没sd卡读写权限可能播放本地视频出错。
+
+### 8.检测网络
+
+可以在播放开始回调方法检测当前网络环境，如果不是wifi，可以暂停播放，弹框提示用户。
+
+```java
+/**
+* 开始播放
+*
+* @param isPlayNetwork 是否是播放网络资源
+*/
+@Override
+public void onPlayStart(boolean isPlayNetwork) {
+	if (isPlayNetwork) {
+    	//播放的是网络视频资源，检测是否是wifi环境，如果不是，暂停提示用户非wifi环境
+    	if (mVideoView != null) {
+        	mVideoView.onPause();
+    	}
+    	//弹框提示非wifi环境，用选择继续播放
+    	if (mVideoView != null) {
+        	mVideoView.onResume();
+    	}
+	}
+}
+```
 
 
-### 7.生命周期
+
+### 8.生命周期
 
 ```java
 @Override
@@ -356,14 +385,71 @@ public void onBackPressed() {
 }
 ```
 
-### 8.引擎选择机制
+### 9.引擎选择机制
 
 VideoEntity.setVideoEngineType(VideoEngineType)
 
-| 类型                               | 说明                 |
-| ---------------------------------- | -------------------- |
-| VideoEngineType.TYPE_ANDROID_MEDIA | 原生播放器（默认值） |
-| VideoEngineType.TYPE_TENCENT       | 腾讯视频播放器       |
-| VideoEngineType.TYPE_LETV          | 乐视视频播放器       |
+| 类型                               | 说明                                                         |
+| ---------------------------------- | ------------------------------------------------------------ |
+| VideoEngineType.TYPE_ANDROID_MEDIA | 原生播放器（默认值），只可以播放url，并且视频格式有限制      |
+| VideoEngineType.TYPE_TENCENT       | 腾讯视频播放器，只可以播放url，视频格式多种                  |
+| VideoEngineType.TYPE_LETV          | 乐视视频播放器，能播放uuid+vuid和url两种，视频格式多种（适合手机端） |
 
 实体类默认使用原生播放器，设置腾讯视频播放器和乐视播放器播放链接可以支持多种格式，原生的支持格式相对较少。
+
+### 10.防混淆
+
+在app/proguard-rules.pro文件里添加防混淆代码。
+
+乐视的
+
+```java
+# update time 2017-05-11 最后提供给客户的混淆规则
+# LePlayerSdk----proguard-start
+-keep class com.lecloud.sdk.api.stats.** { *;}
+-keep class com.lecloud.sdk.api.** { *;}
+-keep class com.lecloud.sdk.player.** { *;}
+-keep class com.lecloud.sdk.utils.**{ *;}
+-keep class com.lecloud.sdk.videoview.** { *;}
+-keep class com.lecloud.sdk.listener.** { *;}
+-keep class com.lecloud.sdk.download.**{ *;}
+-keep class com.lecloud.sdk.config.** { *;}
+-keep class com.lecloud.sdk.surfaceview.** { *;}
+-keep class com.lecloud.sdk.constant.** { *;}
+-keep class com.lecloud.sdk.pano.** { *;}
+# cmf-proguard-start
+-keep class com.letvcloud.cmf.** { *; }
+-keep class com.lecloud.uploadservice.** { *; }
+-keep class android.os.SystemProperties
+-keepclassmembers class android.os.SystemProperties{
+public <fields>;
+public <methods>;
+}
+# LeNetWork----proguard-start
+-keep class com.lecloud.sdk.http.** { *;}
+# org.apache.http.legacy----proguard-start
+-keep class android.net.** { *; }
+-keep class com.android.internal.http.multipart.** { *; }
+-keep class org.apache.** { *; }
+# lecloudutils----proguard-start
+-keep class com.lecloud.xutils.** { *; }
+# 全景----proguard-start
+-keep class com.lecloud.vrlib.** { *; }
+-keep class com.letv.pano.** { *; }
+-keep class com.google.vr.** { *; }
+-keep class com.google.vrtoolkit.cardboard.** { *; }
+# 艾瑞统计----proguard-start
+-keep class cn.com.iresearch.mapptracker.** { *; }
+-keep class cn.com.iresearch.vvtracker.** { *; }
+# 广告提供jar包----proguard-start
+-keep public class com.letv.ads.**{ *;}
+-keep public class com.letv.plugin.pluginloader.**{ *;}
+```
+
+自定义的包
+
+```java
+#自定义视频播放器
+-keep class com.lljy.custommediaplayer.**{*;}
+```
+

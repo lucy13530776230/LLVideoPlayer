@@ -28,6 +28,12 @@ public interface IVideoListener {
     void onTitleBackPressed(ScreenStatus currentScreenStatus);
 
     /**
+     * 开始播放
+     * @param isPlayNetwork 是否是播放网络资源
+     */
+    void onPlayStart(boolean isPlayNetwork);
+
+    /**
      * 播放出错
      *
      * @param msg 错误信息
